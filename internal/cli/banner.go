@@ -42,9 +42,17 @@ func termWidth() int {
 	return 80
 }
 
-// banner prints the KeenWay logo — "Keen" in white, "Way" in the app's violet,
-// shading downwards — and one status line under it.
+// banner prints the logo and one status line under it.
 func (a *App) banner(ctx context.Context) {
+	a.logo()
+	if line := a.statusLine(ctx); line != "" {
+		a.p("  %s", line)
+	}
+}
+
+// logo prints the KeenWay logo — "Keen" in white, "Way" in the app's violet,
+// shading downwards — and the tagline.
+func (a *App) logo() {
 	a.p("")
 	if termWidth() < 64 {
 		a.p("  %s%s  %s", a.rgb(236, 238, 247, "Keen"), a.rgb(139, 133, 255, "Way"), a.dim(a.Version))
@@ -58,9 +66,6 @@ func (a *App) banner(ctx context.Context) {
 		}
 	}
 	a.p("  %s", a.dim("XKeen / mihomo без ручной правки конфигов · "+a.Version))
-	if line := a.statusLine(ctx); line != "" {
-		a.p("  %s", line)
-	}
 }
 
 // statusLine is a quick one-line summary: is VPN up, which server, subscription days.

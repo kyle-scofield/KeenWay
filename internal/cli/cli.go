@@ -196,6 +196,8 @@ func (a *App) command(ctx context.Context, args []string) error {
 	cmd, rest := args[0], args[1:]
 	switch cmd {
 	case "status", "s":
+		a.logo()
+		a.p("")
 		return a.status(ctx)
 	case "add":
 		if len(rest) == 0 {
@@ -282,7 +284,11 @@ func (a *App) command(ctx context.Context, args []string) error {
 	case "uninstall":
 		return a.uninstall()
 	case "version", "-v", "--version":
-		a.p("KeenWay %s", a.Version)
+		if len(rest) > 0 && (rest[0] == "--plain" || rest[0] == "-s") {
+			fmt.Fprintln(a.Out, a.Version) // for scripts
+			return nil
+		}
+		a.logo()
 		return nil
 	case "help", "-h", "--help":
 		a.help()
@@ -292,7 +298,7 @@ func (a *App) command(ctx context.Context, args []string) error {
 }
 
 func (a *App) help() {
-	a.p("%s — настройка XKeen/mihomo без ручной правки конфигов", a.bold("KeenWay "+a.Version))
+	a.logo()
 	a.p("")
 	a.p("  keenway                         меню")
 	a.p("  keenway status                  VPN, текущий сервер, подписки (дни и трафик)")
