@@ -11,6 +11,8 @@
 curl -fsSL https://raw.githubusercontent.com/scroge071-cloud/KeenWay/main/install.sh | sh
 ```
 
+На компьютере с Linux или macOS эта же команда ставит KeenWay для управления роутером по сети: `keenway` — меню в терминале, `keenway gui` — окно. Для Windows — `KeenWay-windows.exe` в релизах.
+
 Той же командой KeenWay обновляется (или `keenway update`). Удаление: `keenway uninstall`.
 
 При первом запуске KeenWay читает текущий `/opt/etc/mihomo/config.yaml`: подписки, сервисы и ручные правила сохраняются.

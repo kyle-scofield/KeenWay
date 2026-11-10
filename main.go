@@ -6,6 +6,7 @@ import (
 	"embed"
 	"flag"
 	"fmt"
+	"golang.org/x/term"
 	"io/fs"
 	"log"
 	"net/http"
@@ -50,8 +51,24 @@ func main() {
 		os.Exit(cli.New(st, version).Run(os.Args[1:]))
 	}
 
-	noWindow := flag.Bool("no-window", false, "только запустить сервер и напечатать адрес")
-	flag.Parse()
+	args := os.Args[1:]
+	if !wantWindow(args) {
+		// On a computer, in a terminal: the same menu and commands as on the router,
+		// the router is reached over SSH. Settings are shared with the window version.
+		st, err := store.Open()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "не удалось открыть настройки:", err)
+			os.Exit(1)
+		}
+		enableTerminalColors()
+		os.Exit(cli.NewRemote(st, version).Run(args))
+	}
+	if len(args) > 0 && (args[0] == "gui" || args[0] == "window") {
+		args = args[1:]
+	}
+	flags := flag.NewFlagSet("keenway", flag.ExitOnError)
+	noWindow := flags.Bool("no-window", false, "только запустить сервер и напечатать адрес")
+	flags.Parse(args)
 
 	st, err := store.Open()
 	if err != nil {
@@ -77,6 +94,20 @@ func main() {
 		}()
 	}
 	log.Fatal(http.Serve(ln, srv.Handler()))
+}
+
+// wantWindow decides between the window and the terminal program on a computer:
+// "keenway gui" or a launch without a terminal (double-click, Windows GUI build) opens
+// the window; anything typed in a terminal runs the terminal program.
+func wantWindow(args []string) bool {
+	if len(args) > 0 {
+		switch args[0] {
+		case "gui", "window", "-no-window", "--no-window":
+			return true
+		}
+		return false
+	}
+	return !term.IsTerminal(int(os.Stdin.Fd()))
 }
 
 // openWindow prefers a Chromium-based browser in "app" mode (own window, no address bar)

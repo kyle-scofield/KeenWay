@@ -32,7 +32,10 @@ jobs:
           build linux arm    ""        7  "" keenway-linux-armv7
           # Computers (window)
           build windows amd64 "" "" "-H windowsgui" KeenWay-windows.exe
+          build windows amd64 "" "" "" keenway-windows-terminal.exe
           build linux   amd64 "" "" "" keenway-linux-amd64
+          build darwin  amd64 "" "" "" keenway-darwin-amd64
+          build darwin  arm64 "" "" "" keenway-darwin-arm64
           cd dist && for f in *; do sha256sum "$f" | awk '{print $1}' > "$f.sha256"; done
       - uses: softprops/action-gh-release@v2
         with:

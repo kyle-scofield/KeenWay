@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -25,11 +26,14 @@ import (
 
 // App is one run of the terminal program.
 type App struct {
-	E       *core.Engine
-	In      *bufio.Reader
-	Out     io.Writer
-	Version string
-	color   bool
+	E        *core.Engine
+	In       *bufio.Reader
+	Out      io.Writer
+	Version  string
+	color    bool
+	remote   bool   // running on a computer, the router is reached over SSH
+	routerPW string // router password for this run when it is not saved
+	logoDone bool   // the logo was already printed in this run
 }
 
 func New(st *store.Store, version string) *App {
@@ -158,8 +162,29 @@ func useRouterTimezone() {
 
 // Run executes one command (or the menu when args is empty) and returns the exit code.
 func (a *App) Run(args []string) int {
-	useRouterTimezone()
+	if !a.remote {
+		useRouterTimezone()
+	}
 	ctx := context.Background()
+	if len(args) > 0 && (args[0] == "version" || args[0] == "-v" || args[0] == "--version" || args[0] == "help" || args[0] == "-h" || args[0] == "--help") {
+		if err := a.command(ctx, args); err != nil {
+			a.p("%s %v", a.red("✖"), err)
+			return 1
+		}
+		return 0
+	}
+	if a.remote {
+		if len(args) > 0 && args[0] == "connect" {
+			a.E.St.Update(func(s *store.State) { s.Imported = false })
+		}
+		if err := a.onboard(ctx); err != nil {
+			a.p("%s %v", a.red("✖"), err)
+			return 1
+		}
+		if len(args) > 0 && args[0] == "connect" {
+			args = nil
+		}
+	}
 	if err := a.ensureImported(ctx); err != nil {
 		a.p("%s %v", a.red("✖"), err)
 		return 1
@@ -180,7 +205,11 @@ func (a *App) ensureImported(ctx context.Context) error {
 	if a.E.St.Get().Imported {
 		return nil
 	}
-	c, _ := a.E.Connect(ctx)
+	c, err := a.E.Connect(ctx)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
 	warnings, err := a.E.Import(ctx, c)
 	if err != nil {
 		return fmt.Errorf("первый запуск: %v", err)
@@ -301,6 +330,10 @@ func (a *App) help() {
 	a.logo()
 	a.p("")
 	a.p("  keenway                         меню")
+	if a.remote {
+		a.p("  keenway gui                     открыть окно программы")
+		a.p("  keenway connect                 подключиться к другому роутеру / сменить пароль")
+	}
 	a.p("  keenway status                  VPN, текущий сервер, подписки (дни и трафик)")
 	a.p("  keenway add <ключ|ссылка>       добавить ключ (vless/hy2/trojan/ss/vmess/WireGuard) или подписку")
 	a.p("  keenway subs | keys             подписки | отдельные ключи")
@@ -835,80 +868,142 @@ func delayText(a *App, d int, known bool) string {
 	return a.red(fmt.Sprintf("%4d мс", d))
 }
 
-func (a *App) servers(ctx context.Context, test bool) error {
+// serverPool finds the group that lists every server ("⚙️ Manual" in extended mode,
+// VPN itself in simple mode) and the servers in it, in config order.
+func serverPool(groups []mihomo.Group) (pool *mihomo.Group, nodes []string, byName map[string]*mihomo.Group) {
+	byName = map[string]*mihomo.Group{}
+	for i := range groups {
+		byName[groups[i].Name] = &groups[i]
+	}
+	pool = byName[gen.GroupManual]
+	if pool == nil {
+		pool = byName[gen.GroupVPN]
+	}
+	if pool == nil {
+		return nil, nil, byName
+	}
+	for _, o := range pool.Options {
+		if byName[o] == nil && o != "DIRECT" && o != "REJECT" && o != "PASS" {
+			nodes = append(nodes, o)
+		}
+	}
+	return pool, nodes, byName
+}
+
+// servers pings every server right away and lists them fastest first; the numbers
+// stay the same between runs (config order), so "keenway use 12" is predictable.
+func (a *App) servers(ctx context.Context, _ bool) error {
 	m := a.E.Mihomo(ctx)
-	delays := map[string]int{}
-	known := map[string]bool{}
-	if providers, err := m.Providers(ctx); err == nil {
-		for _, p := range providers {
-			for _, n := range p.Nodes {
-				delays[n.Name], known[n.Name] = n.Delay, n.Delay > 0
-			}
-		}
-	}
-	if test {
-		a.p("Проверка серверов…")
-		res, err := m.TestGroup(ctx, "VPN")
-		if err != nil {
-			return err
-		}
-		for k, v := range res {
-			delays[k], known[k] = v, true
-		}
-	}
 	groups, err := m.Groups(ctx)
 	if err != nil {
 		return err
 	}
-	for _, g := range groups {
-		if g.Name != "VPN" {
-			continue
-		}
-		for i, o := range g.Options {
-			mark := "  "
-			if o == g.Now {
-				mark = a.green("✔ ")
-			}
-			a.p("  %s%2d. %s %s", mark, i+1, pad(o, 40), delayText(a, delays[o], known[o]))
+	pool, nodes, byName := serverPool(groups)
+	if pool == nil {
+		return fmt.Errorf("в конфиге нет группы VPN")
+	}
+	vpn := byName[gen.GroupVPN]
+	chain := []string{}
+	for g, i := vpn, 0; g != nil && i < 5; g, i = byName[g.Now], i+1 {
+		chain = append(chain, g.Now)
+	}
+	current := ""
+	if len(chain) > 0 {
+		current = chain[len(chain)-1]
+	}
+	a.p("VPN сейчас: %s", a.bold(strings.Join(chain, " → ")))
+	var modes []string
+	for _, o := range vpn.Options {
+		if byName[o] != nil {
+			modes = append(modes, o)
 		}
 	}
-	a.p("Выбрать: %s", a.bold("keenway use <номер или название>"))
+	if len(modes) > 1 {
+		a.p("Режим: %s  %s", strings.Join(modes, " · "), a.dim("(keenway use auto | fallback | manual)"))
+	}
+	a.p("Пинг %d серверов…", len(nodes))
+	delays, err := m.TestGroup(ctx, pool.Name)
+	if err != nil {
+		return err
+	}
+	order := make([]int, len(nodes))
+	for i := range order {
+		order[i] = i
+	}
+	rank := func(i int) int {
+		if d := delays[nodes[i]]; d > 0 {
+			return d
+		}
+		return 1 << 30
+	}
+	sort.SliceStable(order, func(x, y int) bool { return rank(order[x]) < rank(order[y]) })
+	alive := 0
+	for _, i := range order {
+		n := nodes[i]
+		mark := "  "
+		if n == current {
+			mark = a.green("✔ ")
+		}
+		d := delays[n]
+		if d > 0 {
+			alive++
+		}
+		a.p("  %s%3d. %s %s", mark, i+1, pad(n, 42), delayText(a, d, true))
+	}
+	a.p("Отвечают %d из %d. Выбрать: %s", alive, len(nodes), a.bold("keenway use <номер или название>"))
 	return nil
 }
 
 func (a *App) use(ctx context.Context, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("keenway use <номер или название сервера>")
+		return fmt.Errorf("keenway use <номер или название сервера> | auto | fallback | manual")
 	}
 	m := a.E.Mihomo(ctx)
 	groups, err := m.Groups(ctx)
 	if err != nil {
 		return err
 	}
-	want := strings.Join(args, " ")
-	for _, g := range groups {
-		if g.Name != "VPN" {
-			continue
-		}
-		choice := ""
-		if n, err := strconv.Atoi(want); err == nil && n >= 1 && n <= len(g.Options) {
-			choice = g.Options[n-1]
-		}
-		for _, o := range g.Options {
-			if choice == "" && strings.Contains(strings.ToLower(o), strings.ToLower(want)) {
-				choice = o
+	pool, nodes, byName := serverPool(groups)
+	vpn := byName[gen.GroupVPN]
+	if vpn == nil || pool == nil {
+		return fmt.Errorf("в конфиге нет группы VPN")
+	}
+	want := strings.TrimSpace(strings.Join(args, " "))
+	low := strings.ToLower(want)
+	// a mode: Auto-Best / Fallback / Manual (or Fastest in simple mode)
+	for _, o := range vpn.Options {
+		if byName[o] != nil && (strings.Contains(strings.ToLower(o), low) || (low == "auto" && (o == gen.GroupAutoBest || o == gen.GroupFastest))) {
+			if err := m.Select(ctx, gen.GroupVPN, o); err != nil {
+				return err
 			}
+			a.p("%s VPN → %s", a.green("✔"), o)
+			return nil
 		}
-		if choice == "" {
-			return fmt.Errorf("сервер %q не найден (keenway servers)", want)
+	}
+	choice := ""
+	if n, err := strconv.Atoi(want); err == nil && n >= 1 && n <= len(nodes) {
+		choice = nodes[n-1]
+	}
+	for _, o := range nodes {
+		if choice == "" && strings.Contains(strings.ToLower(o), low) {
+			choice = o
 		}
-		if err := m.Select(ctx, "VPN", choice); err != nil {
+	}
+	if choice == "" {
+		return fmt.Errorf("сервер %q не найден (keenway servers)", want)
+	}
+	if pool.Name != gen.GroupVPN {
+		if err := m.Select(ctx, pool.Name, choice); err != nil {
 			return err
 		}
-		a.p("%s VPN → %s", a.green("✔"), choice)
-		return nil
+		if err := m.Select(ctx, gen.GroupVPN, pool.Name); err != nil {
+			return err
+		}
+	} else if err := m.Select(ctx, gen.GroupVPN, choice); err != nil {
+		return err
 	}
-	return fmt.Errorf("в конфиге нет группы VPN")
+	a.p("%s VPN → %s", a.green("✔"), choice)
+	return nil
 }
 
 func (a *App) traffic(ctx context.Context) error {
@@ -1030,8 +1125,14 @@ func (a *App) uninstall() error {
 		return nil
 	}
 	self, _ := os.Executable()
-	if a.confirm("Удалить и сохранённые настройки KeenWay (/opt/etc/keenway)?") {
-		os.RemoveAll(StateDir)
+	dir := StateDir
+	if a.remote {
+		if cfg, err := os.UserConfigDir(); err == nil {
+			dir = filepath.Join(cfg, "KeenWay")
+		}
+	}
+	if a.confirm("Удалить и сохранённые настройки KeenWay (" + dir + ")?") {
+		os.RemoveAll(dir)
 	}
 	if err := os.Remove(self); err != nil {
 		return err

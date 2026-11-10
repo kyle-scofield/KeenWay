@@ -156,10 +156,10 @@ func (a *App) menuDevices(ctx context.Context) error {
 }
 
 func (a *App) menuServers(ctx context.Context) error {
-	if err := a.servers(ctx, a.confirm("Проверить скорость всех серверов?")); err != nil {
+	if err := a.servers(ctx, true); err != nil {
 		return err
 	}
-	if choice := a.ask("Номер сервера для VPN (Enter — оставить): "); choice != "" {
+	if choice := a.ask("Номер сервера, или auto / fallback / manual (Enter — оставить): "); choice != "" {
 		return a.use(ctx, []string{choice})
 	}
 	return nil

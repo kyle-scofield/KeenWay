@@ -53,6 +53,10 @@ func (a *App) banner(ctx context.Context) {
 // logo prints the KeenWay logo — "Keen" in white, "Way" in the app's violet,
 // shading downwards — and the tagline.
 func (a *App) logo() {
+	if a.logoDone {
+		return
+	}
+	a.logoDone = true
 	a.p("")
 	if termWidth() < 64 {
 		a.p("  %s%s  %s", a.rgb(236, 238, 247, "Keen"), a.rgb(139, 133, 255, "Way"), a.dim(a.Version))
