@@ -1,0 +1,40 @@
+name: release
+
+# Push a tag like v0.1.0 to build every target and publish a GitHub release.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go vet ./... && go test ./...
+      - name: Build
+        env:
+          CGO_ENABLED: "0"
+        run: |
+          set -e
+          flags="-s -w -X main.version=${GITHUB_REF_NAME} -X keenway/internal/cli.Repo=${GITHUB_REPOSITORY}"
+          mkdir -p dist
+          build() { GOOS=$1 GOARCH=$2 GOMIPS=$3 GOARM=$4 go build -trimpath -ldflags="$flags $5" -o "dist/$6" .; }
+          # Routers (terminal program)
+          build linux mipsle softfloat "" "" keenway-linux-mipsle
+          build linux mips   softfloat "" "" keenway-linux-mips
+          build linux arm64  ""        "" "" keenway-linux-arm64
+          build linux arm    ""        7  "" keenway-linux-armv7
+          # Computers (window)
+          build windows amd64 "" "" "-H windowsgui" KeenWay-windows.exe
+          build linux   amd64 "" "" "" keenway-linux-amd64
+          cd dist && for f in *; do sha256sum "$f" | awk '{print $1}' > "$f.sha256"; done
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
