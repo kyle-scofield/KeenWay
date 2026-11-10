@@ -24,16 +24,19 @@ func (a *App) menu(ctx context.Context) {
 		{"Устройства: правило для каждого", a.menuDevices},
 		{"Серверы: пинг и выбор", a.menuServers},
 		{"Трафик", a.traffic},
+		{"Через что идёт сайт", a.menuRoute},
+		{"Быстрый режим: всё через VPN / без VPN / игровой", a.menuProfile},
 		{"Проверить и применить на роутере", a.menuApply},
 		{"Настройки", a.menuSettings},
 	}
+	a.banner(ctx)
 	for {
 		a.p("")
 		pending := ""
 		if core.Pending(a.E.St.Get()) {
 			pending = a.yellow("  ● есть неприменённые изменения")
 		}
-		a.p("%s%s", a.bold("KeenWay "+a.Version), pending)
+		a.p("%s%s", a.rgb(236, 238, 247, "Keen")+a.rgb(139, 133, 255, "Way")+a.dim(" · меню"), pending)
 		for i, it := range items {
 			a.p("  %2d. %s", i+1, it.label)
 		}
@@ -223,4 +226,23 @@ func (a *App) menuSettings(ctx context.Context) error {
 		return a.command(ctx, []string{"config"})
 	}
 	return nil
+}
+
+func (a *App) menuRoute(ctx context.Context) error {
+	site := strings.TrimSpace(a.ask("Сайт (например web.telegram.org): "))
+	if site == "" {
+		return nil
+	}
+	return a.route(ctx, []string{site})
+}
+
+func (a *App) menuProfile(ctx context.Context) error {
+	for i, p := range core.Profiles {
+		a.p("  %d. %s — %s", i+1, a.bold(p.Name), a.dim(p.About))
+	}
+	n, err := strconv.Atoi(a.ask("> "))
+	if err != nil || n < 1 || n > len(core.Profiles) {
+		return nil
+	}
+	return a.profile(ctx, []string{core.Profiles[n-1].ID})
 }
