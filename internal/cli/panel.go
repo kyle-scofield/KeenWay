@@ -22,8 +22,8 @@ const DefaultPanelPort = 8090
 // rc.func's "killall keenway" would also kill the terminal program.
 const panelInit = "/opt/etc/init.d/S99keenway-panel"
 
-// DonateCard is shown under "Поддержать проект".
-const DonateCard = "2202 2085 5093 6505"
+// DonateTON is the TON wallet shown under "Поддержать проект" (no memo needed).
+const DonateTON = "UQAI7imPPZYfszJy4p_GaQV39o_6uHVd-N-pMLhbOUjSkEmD"
 
 func panelScript(bin string) string {
 	return `#!/bin/sh

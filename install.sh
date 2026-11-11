@@ -137,5 +137,5 @@ fi
 say "  Все команды:   keenway help"
 say "  Обновить:      keenway update"
 say ""
-say "  ${M}♥${R} Поддержать проект: карта 2202 2085 5093 6505"
+say "  ${M}♥${R} Поддержать проект (TON): UQAI7imPPZYfszJy4p_GaQV39o_6uHVd-N-pMLhbOUjSkEmD"
 say ""

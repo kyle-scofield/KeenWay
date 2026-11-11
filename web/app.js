@@ -1077,17 +1077,21 @@ function versionCard() {
 }
 
 // ---------- support ----------
-const DONATE_CARD = '2202 2085 5093 6505';
+const DONATE_TON = 'UQAI7imPPZYfszJy4p_GaQV39o_6uHVd-N-pMLhbOUjSkEmD';
 function showDonate() {
   const copy = h('button', { class: 'btn primary', onclick: async () => {
-    try { await navigator.clipboard.writeText(DONATE_CARD.replace(/ /g, '')); copy.textContent = 'Скопировано ✓'; } catch { toast('Не удалось скопировать — выделите номер вручную'); }
-  } }, 'Скопировать номер');
+    try { await navigator.clipboard.writeText(DONATE_TON); copy.textContent = 'Скопировано ✓'; } catch { toast('Не удалось скопировать — выделите адрес вручную'); }
+  } }, 'Скопировать адрес');
   const modal = h('div', { class: 'modal', onclick: (e) => { if (e.target === modal) modal.remove(); } },
     h('div', { class: 'card stack donate-card' },
       h('h2', { style: 'margin:0' }, '💜 Поддержать KeenWay'),
-      h('p', { class: 'muted' }, 'KeenWay бесплатный. Если он вам пригодился, можно поддержать разработку переводом на карту — любой суммой.'),
-      h('div', { class: 'card-number' }, DONATE_CARD),
-      h('div', { class: 'row', style: 'justify-content:flex-end' }, h('button', { class: 'btn', onclick: () => modal.remove() }, 'Закрыть'), copy),
+      h('p', { class: 'muted' }, 'KeenWay бесплатный. Если он вам пригодился, можно поддержать разработку любой суммой в криптовалюте TON.'),
+      h('div', { class: 'card-number wallet' }, DONATE_TON),
+      h('p', { class: 'muted small', style: 'margin:0' }, 'Сеть: TON. Мемо (комментарий) не нужно. Отправляйте только TON — другие монеты на этот адрес могут потеряться.'),
+      h('div', { class: 'row', style: 'justify-content:flex-end;flex-wrap:wrap' },
+        h('button', { class: 'btn', onclick: () => modal.remove() }, 'Закрыть'),
+        h('a', { class: 'btn', href: 'ton://transfer/' + DONATE_TON }, 'Открыть в кошельке'),
+        copy),
       h('p', { class: 'muted small', style: 'margin:0' }, 'Спасибо!')));
   document.body.append(modal);
 }

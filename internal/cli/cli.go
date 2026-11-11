@@ -378,7 +378,7 @@ func (a *App) help() {
 
 // donate prints the "support the project" line.
 func (a *App) donate() {
-	a.p("  %s Поддержать проект: карта %s", a.rgb(139, 133, 255, "♥"), a.bold(DonateCard))
+	a.p("  %s Поддержать проект (TON, сеть TON): %s", a.rgb(139, 133, 255, "♥"), a.bold(DonateTON))
 }
 
 // ---------- status ----------

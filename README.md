@@ -72,10 +72,12 @@ keenway panel off         # выключить и убрать из автоза
 
 ## Поддержать проект
 
-Если KeenWay вам пригодился, можно поддержать разработку переводом на карту:
+Если KeenWay вам пригодился, можно поддержать разработку в криптовалюте **TON** (сеть TON, мемо не нужно):
 
 ```
-2202 2085 5093 6505
+UQAI7imPPZYfszJy4p_GaQV39o_6uHVd-N-pMLhbOUjSkEmD
 ```
+
+[Открыть в кошельке](ton://transfer/UQAI7imPPZYfszJy4p_GaQV39o_6uHVd-N-pMLhbOUjSkEmD) — Tonkeeper, Telegram Wallet и другие.
 
 Спасибо! 💜
