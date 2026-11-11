@@ -1,11 +1,11 @@
 #!/bin/sh
 # KeenWay installer: on a Keenetic router with Entware (XKeen + mihomo) it installs the
 # router build; on a Linux or macOS computer, the program that manages the router.
-#   curl -fsSL https://raw.githubusercontent.com/scroge071-cloud/KeenWay/main/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/kyle-scofield/KeenWay/main/install.sh | sh
 # Running it again updates KeenWay; settings in /opt/etc/keenway are kept.
 set -e
 
-REPO="${KEENWAY_REPO:-scroge071-cloud/KeenWay}"
+REPO="${KEENWAY_REPO:-kyle-scofield/KeenWay}"
 BIN=/opt/sbin/keenway
 
 # Colours only on a real terminal (with "curl | sh" the output still goes to the terminal).

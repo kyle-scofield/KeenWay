@@ -1129,7 +1129,7 @@ func (a *App) updater(ctx context.Context, args []string) error {
 // ---------- install management ----------
 
 // Repo is the GitHub "owner/name" releases come from; set at build time.
-var Repo = "scroge071-cloud/KeenWay"
+var Repo = "kyle-scofield/KeenWay"
 
 func (a *App) selfUpdate() error {
 	if a.remote && runtime.GOOS == "windows" {

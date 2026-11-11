@@ -17,7 +17,7 @@
 Нужен Entware с XKeen на ядре mihomo. В терминале роутера (SSH):
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/scroge071-cloud/KeenWay/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/kyle-scofield/KeenWay/main/install.sh | sh
 ```
 
 На компьютере с Linux или macOS эта же команда ставит KeenWay для управления роутером по сети: `keenway` — меню в терминале, `keenway gui` — окно. Для Windows — `KeenWay-windows.exe` в релизах.
