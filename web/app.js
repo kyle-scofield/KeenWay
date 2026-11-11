@@ -55,7 +55,13 @@ function seg(options, value, onchange) {
 const S = { state: null, status: null, devices: null, ui: { templateUpdater: null }, page: 'overview', timers: [] };
 
 async function loadState() {
+  const prev = S.state?.settings;
   S.state = await api('GET', '/state');
+  // Pages keep a reference to the settings object; refresh it in place so later edits are not lost.
+  if (prev) {
+    for (const k of Object.keys(prev)) delete prev[k];
+    S.state.settings = Object.assign(prev, S.state.settings);
+  }
   // Go sends empty lists as null; the pages expect arrays.
   S.state.keys = S.state.keys || [];
   S.state.importedNodes = S.state.importedNodes || [];
@@ -67,10 +73,11 @@ async function loadState() {
   document.getElementById('routerState').textContent = S.state.hasPassword ? `Роутер ${r.host}` : 'Роутер не подключён';
 }
 
-let saveTimer;
+let saveTimer, pendingSave;
 function saveSettings(immediate) {
   clearTimeout(saveTimer);
   const run = async () => {
+    pendingSave = null;
     try {
       await api('PUT', '/settings', { ...S.state.settings, keepSecret: true });
       await loadState();
@@ -78,6 +85,16 @@ function saveSettings(immediate) {
   };
   if (immediate) return run();
   saveTimer = setTimeout(run, 400);
+  pendingSave = run;
+}
+
+// flushSave sends a pending (debounced) change right away, e.g. before applying.
+async function flushSave() {
+  if (!pendingSave) return;
+  clearTimeout(saveTimer);
+  const run = pendingSave;
+  pendingSave = null;
+  await run();
 }
 
 // ---------- navigation ----------
@@ -859,6 +876,7 @@ const APPLY_PLAN = [
   ['health', 'Проверка интернета и VPN', 'Запуск mihomo и загрузка списков сайтов, проверка интернета и серверов VPN (обычно до минуты)'],
 ];
 async function runApply(dry) {
+  await flushSave();
   const plan = dry ? APPLY_PLAN.slice(0, 2) : APPLY_PLAN;
   const rows = {};
   const steps = h('ul', { class: 'steps' }, plan.map(([id, name]) => {
@@ -947,7 +965,7 @@ async function runApply(dry) {
 }
 document.getElementById('applyBtn').onclick = () => runApply(false);
 document.getElementById('dryBtn').onclick = () => runApply(true);
-document.getElementById('previewBtn').onclick = showPreview;
+document.getElementById('previewBtn').onclick = async () => { await flushSave(); showPreview(); };
 
 // ---------- start ----------
 setInterval(() => api('POST', '/ping').catch(() => {}), 10000);
