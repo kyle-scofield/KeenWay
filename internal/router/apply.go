@@ -123,7 +123,9 @@ avail=$(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo)
 rss=0; for p in $(pidof mihomo); do r=$(awk '/VmRSS/{print int($2/1024)}' /proc/$p/status); [ "${r:-0}" -gt "$rss" ] && rss=$r; done
 echo "mem=${avail}MB mihomo=${rss}MB"
 code=skip
-if [ "$kw_want" = "$kw_have" ] && [ "${avail:-0}" -gt $((rss + 48)) ]; then
+# A reload keeps mihomo and its firewall rules alive (no outage); measured on a 256 MB router it
+# needs ~10 MB on top of mihomo. A full XKeen restart cuts the internet for every home device.
+if [ "$kw_want" = "$kw_have" ] && [ "${avail:-0}" -gt 40 ]; then
   code=$(curl -s -o /tmp/keenway-reload.txt -w '%%{http_code}' -m 25 -X PUT %[1]s -H 'Content-Type: application/json' 'http://127.0.0.1:9090/configs?force=true' -d '{"path":"%[2]s"}') || true
 fi
 echo "reload_code=$code"
