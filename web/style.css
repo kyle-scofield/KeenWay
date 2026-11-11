@@ -118,3 +118,22 @@ tr.current-row td { background: var(--good-soft); }
 .chip.toggle.off { opacity: .45; text-decoration: line-through; }
 .chip.toggle:hover { background: var(--accent-soft); }
 .steps-list { margin: 0; padding-left: 20px; color: var(--muted); } .steps-list li + li { margin-top: 3px; }
+
+/* support */
+nav .donate { margin: 0 4px 8px; padding: 9px 12px; border-radius: 10px; text-decoration: none; color: var(--accent); background: var(--accent-soft); font-weight: 600; text-align: center; }
+nav .donate:hover { filter: brightness(1.12); }
+.donate-card .card-number { font: 700 1.55rem/1.2 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: .06em; text-align: center; padding: 18px 12px; border-radius: 12px; background: var(--surface-2); user-select: all; }
+
+/* phones (the router's web panel is often opened from one) */
+@media (max-width: 760px) {
+  body { flex-direction: column; }
+  nav { width: auto; flex-direction: row; overflow-x: auto; padding: 8px; gap: 4px; border-right: 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 20; }
+  nav .brand { padding: 4px 8px; flex: none; }
+  nav .brand div { display: none; }
+  nav button { flex: none; white-space: nowrap; padding: 8px 10px; }
+  nav .spacer, nav .router-state { display: none; }
+  nav .donate { flex: none; margin: 0; white-space: nowrap; }
+  main { padding: 16px 16px 140px; overflow: visible; }
+  .applybar { flex-wrap: wrap; left: 0; padding: 10px 16px; }
+  .grid, .grid.small { grid-template-columns: 1fr !important; }
+}

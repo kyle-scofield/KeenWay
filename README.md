@@ -24,6 +24,18 @@ curl -fsSL https://raw.githubusercontent.com/scroge071-cloud/KeenWay/main/instal
 
 Той же командой KeenWay обновляется (или `keenway update`). Удаление: `keenway uninstall`.
 
+### Веб-панель (по желанию)
+
+Можно поставить на роутер постоянную веб-панель — то же окно KeenWay, но в браузере с любого устройства дома, в том числе с телефона:
+
+```sh
+keenway panel on          # спросит пароль, адрес будет http://192.168.1.1:8090
+keenway panel password    # сменить пароль
+keenway panel off         # выключить и убрать из автозапуска
+```
+
+Установщик сам предложит её поставить. Панель открывается только из домашней сети и спрашивает пароль; из интернета она недоступна. Занимает около 10–15 МБ памяти роутера.
+
 При первом запуске KeenWay читает текущий `/opt/etc/mihomo/config.yaml`: подписки, сервисы и ручные правила сохраняются.
 
 ## Как пользоваться
@@ -45,6 +57,7 @@ curl -fsSL https://raw.githubusercontent.com/scroge071-cloud/KeenWay/main/instal
 | `keenway check` · `keenway apply` | проверить конфиг · применить на роутере |
 | `keenway rollback` | вернуть прежний конфиг |
 | `keenway password set` | пароль на zashboard (порт 9090) |
+| `keenway panel on` | веб-панель на роутере (браузер, с паролем) |
 | `keenway updater off` | отключить `update-config.sh`, который перезаписывает правила |
 
 Полный список: `keenway help`.

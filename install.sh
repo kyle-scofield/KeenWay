@@ -12,10 +12,10 @@ BIN=/opt/sbin/keenway
 if [ -t 1 ] && [ -z "$NO_COLOR" ]; then
   E=$(printf '\033')
   C() { printf '%s[1;38;2;%sm' "$E" "$1"; }
-  R="$E[0m"; D="$E[2m"; G="$E[32m"; Y="$E[33m"; RED="$E[31m"
+  R="$E[0m"; D="$E[2m"; G="$E[32m"; Y="$E[33m"; RED="$E[31m"; B="$E[1m"; M="$E[1;38;2;139;133;255m"
 else
   C() { :; }
-  R=; D=; G=; Y=; RED=
+  R=; D=; G=; Y=; RED=; B=; M=
 fi
 
 say() { printf '%s\n' "$*"; }
@@ -118,7 +118,24 @@ if [ "$kind" = computer ]; then
   esac
 else
   say "  Меню:          ${G}keenway${R}"
+  if [ -f /opt/etc/init.d/S99keenway-panel ]; then
+    # the web panel runs the old program: restart it with the new one
+    sh /opt/etc/init.d/S99keenway-panel restart >/dev/null 2>&1
+    say "  Веб-панель:    перезапущена (keenway panel — адрес)"
+  elif [ -r /dev/tty ] && [ -w /dev/tty ]; then
+    say ""
+    say "  ${B}Веб-панель${R} — то же окно KeenWay в браузере с телефона или ПК дома, по паролю."
+    say "  Работает на роутере постоянно (~10–15 МБ памяти). Из интернета недоступна."
+    printf "  Поставить веб-панель? [y/N] " >/dev/tty
+    read -r ans </dev/tty || ans=""
+    case "$ans" in
+      y|Y|д|Д|yes|да|Да) "$BIN" panel on </dev/tty >/dev/tty 2>&1 || say "  ${Y}!${R} Можно позже: keenway panel on" ;;
+      *) say "  Можно позже: ${G}keenway panel on${R}" ;;
+    esac
+  fi
 fi
 say "  Все команды:   keenway help"
 say "  Обновить:      keenway update"
+say ""
+say "  ${M}♥${R} Поддержать проект: карта 2202 2085 5093 6505"
 say ""

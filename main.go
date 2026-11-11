@@ -48,6 +48,10 @@ func main() {
 			fmt.Fprintln(os.Stderr, "не удалось открыть настройки:", err)
 			os.Exit(1)
 		}
+		if len(os.Args) > 1 && os.Args[1] == "serve" {
+			servePanel(st)
+			return
+		}
 		os.Exit(cli.New(st, version).Run(os.Args[1:]))
 	}
 
@@ -94,6 +98,24 @@ func main() {
 		}()
 	}
 	log.Fatal(http.Serve(ln, srv.Handler()))
+}
+
+// servePanel runs the web panel on the router (started by /opt/etc/init.d/S99keenway-panel).
+// It answers only the home network and asks for the panel password.
+func servePanel(st *store.Store) {
+	if st.Get().Panel.PassHash == "" {
+		log.Fatal("пароль панели не задан: keenway panel on")
+	}
+	port := st.Get().Panel.Port
+	if port == 0 {
+		port = cli.DefaultPanelPort
+	}
+	ui, _ := fs.Sub(webFiles, "web")
+	srv := app.NewPanel(st, ui)
+	addr := fmt.Sprintf(":%d", port)
+	log.Printf("KeenWay %s: панель на порту %d", version, port)
+	server := &http.Server{Addr: addr, Handler: srv.Handler(), ReadHeaderTimeout: 10 * time.Second}
+	log.Fatal(server.ListenAndServe())
 }
 
 // wantWindow decides between the window and the terminal program on a computer:

@@ -70,7 +70,7 @@ async function loadState() {
   for (const k of ['subscriptions', 'services', 'sites', 'devices']) set[k] = set[k] || [];
   document.getElementById('applybar').hidden = !S.state.currentPending || !S.state.imported;
   const r = S.state.router;
-  document.getElementById('routerState').textContent = S.state.hasPassword ? `Роутер ${r.host}` : 'Роутер не подключён';
+  document.getElementById('routerState').textContent = S.state.panel ? `Панель роутера ${r.host}` : S.state.hasPassword ? `Роутер ${r.host}` : 'Роутер не подключён';
 }
 
 let saveTimer, pendingSave;
@@ -819,9 +819,13 @@ pages.settings = async function () {
   const secretOut = h('span', { class: 'mono' });
   mount(
     h('h1', {}, 'Настройки'),
-    h('div', { class: 'card stack' }, h('h2', { style: 'margin-top:0' }, 'Роутер'),
-      h('div', {}, `${st.router.host} · вход ${st.router.user} · пароль ${st.router.remembered ? 'сохранён' : 'только на эту сессию'}`),
-      h('button', { class: 'btn', onclick: () => pages.connect() }, 'Подключиться заново / другой роутер')),
+    st.panel
+      ? h('div', { class: 'card stack' }, h('h2', { style: 'margin-top:0' }, 'Веб-панель роутера'),
+          h('p', { class: 'muted small' }, 'KeenWay работает прямо на роутере и открывается с любого устройства в домашней сети. Сменить пароль: keenway panel password, выключить панель: keenway panel off (в терминале роутера).'),
+          h('div', {}, h('button', { class: 'btn', onclick: () => { document.cookie = 'kw=; Max-Age=0; path=/'; location.href = '/'; } }, 'Выйти')))
+      : h('div', { class: 'card stack' }, h('h2', { style: 'margin-top:0' }, 'Роутер'),
+          h('div', {}, `${st.router.host} · вход ${st.router.user} · пароль ${st.router.remembered ? 'сохранён' : 'только на эту сессию'}`),
+          h('button', { class: 'btn', onclick: () => pages.connect() }, 'Подключиться заново / другой роутер')),
     h('div', { class: 'card stack' }, h('h2', { style: 'margin-top:0' }, 'Пароль панели mihomo / zashboard (порт 9090)'),
       h('p', { class: 'muted small' }, 'Без пароля любое устройство в домашней сети может переключать VPN и видеть соединения. Если пароль забыт — его всегда можно посмотреть здесь: приложению достаточно доступа к роутеру.'),
       st.hasSecret
@@ -867,6 +871,22 @@ async function showPreview() {
       h('div', { class: 'card', style: 'width:min(900px,100%)' }, h('div', { class: 'row between' }, h('h2', { style: 'margin:0' }, 'config.yaml'), h('button', { class: 'btn', onclick: () => modal.remove() }, 'Закрыть')), h('pre', { class: 'yaml' }, yaml)));
     document.body.append(modal);
   } catch (e) { toast(e.message, 6000); }
+}
+
+// ---------- support ----------
+const DONATE_CARD = '2202 2085 5093 6505';
+function showDonate() {
+  const copy = h('button', { class: 'btn primary', onclick: async () => {
+    try { await navigator.clipboard.writeText(DONATE_CARD.replace(/ /g, '')); copy.textContent = 'Скопировано ✓'; } catch { toast('Не удалось скопировать — выделите номер вручную'); }
+  } }, 'Скопировать номер');
+  const modal = h('div', { class: 'modal', onclick: (e) => { if (e.target === modal) modal.remove(); } },
+    h('div', { class: 'card stack donate-card' },
+      h('h2', { style: 'margin:0' }, '💜 Поддержать KeenWay'),
+      h('p', { class: 'muted' }, 'KeenWay бесплатный. Если он вам пригодился, можно поддержать разработку переводом на карту — любой суммой.'),
+      h('div', { class: 'card-number' }, DONATE_CARD),
+      h('div', { class: 'row', style: 'justify-content:flex-end' }, h('button', { class: 'btn', onclick: () => modal.remove() }, 'Закрыть'), copy),
+      h('p', { class: 'muted small', style: 'margin:0' }, 'Спасибо!')));
+  document.body.append(modal);
 }
 
 const APPLY_PLAN = [
@@ -964,10 +984,11 @@ async function runApply(dry) {
   close.disabled = false;
 }
 document.getElementById('applyBtn').onclick = () => runApply(false);
+document.getElementById('donateBtn').onclick = (e) => { e.preventDefault(); showDonate(); };
 document.getElementById('dryBtn').onclick = () => runApply(true);
 document.getElementById('previewBtn').onclick = async () => { await flushSave(); showPreview(); };
 
 // ---------- start ----------
 setInterval(() => api('POST', '/ping').catch(() => {}), 10000);
 api('POST', '/ping').catch(() => {});
-loadState().then(() => { const want = location.hash.slice(1); go(S.state.hasPassword ? (pages[want] ? want : 'overview') : 'settings'); }).catch((e) => mount(h('div', { class: 'alert bad' }, e.message)));
+loadState().then(() => { const want = location.hash.slice(1); if (want === 'donate') showDonate(); go(S.state.hasPassword ? (pages[want] ? want : 'overview') : 'settings'); }).catch((e) => mount(h('div', { class: 'alert bad' }, e.message)));

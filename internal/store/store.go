@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"keenway/internal/gen"
 	"keenway/internal/router"
@@ -26,6 +27,13 @@ type State struct {
 	Imported    bool     `json:"imported"`    // the router's existing config has been read once
 	LastApplied string   `json:"lastApplied"` // sha256 of the last config applied successfully
 	Notify      Notify   `json:"notify"`
+	Panel       Panel    `json:"panel"`
+}
+
+// Panel is the optional web panel that runs on the router itself (keenway panel on).
+type Panel struct {
+	Port     int    `json:"port,omitempty"`
+	PassHash string `json:"passHash,omitempty"` // bcrypt
 }
 
 // Notify holds the Telegram notification settings (installed on the router).
@@ -41,6 +49,9 @@ type Store struct {
 	mu    sync.Mutex
 	path  string
 	state State
+	// mod is the file's modification time as last read or written: when another process
+	// (the router's web panel and the terminal program share the file) changes it, it is re-read.
+	mod time.Time
 }
 
 // Open loads the state (or starts empty) from <user config dir>/KeenWay/state.json.
@@ -74,13 +85,35 @@ func OpenAt(path string) (*Store, error) {
 		s.state.Settings.BlockAds = true
 	}
 	gen.TidySiteNames(&s.state.Settings)
+	if fi, err := os.Stat(path); err == nil {
+		s.mod = fi.ModTime()
+	}
 	return s, nil
+}
+
+// refresh re-reads the file if another process has changed it. Call with s.mu held.
+func (s *Store) refresh() {
+	fi, err := os.Stat(s.path)
+	if err != nil || fi.ModTime().Equal(s.mod) {
+		return
+	}
+	b, err := os.ReadFile(s.path)
+	if err != nil {
+		return
+	}
+	var fresh State
+	if json.Unmarshal(b, &fresh) == nil {
+		s.state = fresh
+		gen.TidySiteNames(&s.state.Settings)
+	}
+	s.mod = fi.ModTime()
 }
 
 // Get returns a copy of the state.
 func (s *Store) Get() State {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.refresh()
 	return s.state
 }
 
@@ -88,6 +121,7 @@ func (s *Store) Get() State {
 func (s *Store) Update(fn func(*State)) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.refresh()
 	fn(&s.state)
 	b, err := json.MarshalIndent(s.state, "", "  ")
 	if err != nil {
@@ -100,5 +134,11 @@ func (s *Store) Update(fn func(*State)) error {
 	if err := os.WriteFile(tmp, b, 0o600); err != nil {
 		return err
 	}
-	return os.Rename(tmp, s.path)
+	if err := os.Rename(tmp, s.path); err != nil {
+		return err
+	}
+	if fi, err := os.Stat(s.path); err == nil {
+		s.mod = fi.ModTime()
+	}
+	return nil
 }

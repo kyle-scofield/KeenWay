@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/yaml.v3"
 	"io/fs"
 	"keenway/internal/core"
@@ -43,6 +44,18 @@ type Server struct {
 	cancelApply context.CancelFunc // set while an apply runs
 	// templateUpdater remembers whether the router's own config-overwriting cron job is active (nil = unknown).
 	templateUpdater *bool
+	// local is the web panel running on the router itself: commands run locally, access
+	// is by the panel password from the home network instead of the window's one-time link.
+	local   bool
+	loginMu sync.Mutex
+}
+
+// NewPanel is the server for the web panel on the router (keenway serve).
+func NewPanel(st *store.Store, ui fs.FS) *Server {
+	s := New(st, ui)
+	s.local = true
+	s.templateUpdater = nil
+	return s
 }
 
 func New(st *store.Store, ui fs.FS) *Server {
@@ -120,9 +133,25 @@ func (s *Server) Handler() http.Handler {
 		writeJSON(w, http.StatusOK, map[string]bool{"ok": cancel != nil})
 	}))
 	static := http.FileServerFS(s.ui)
+	if s.local {
+		mux.HandleFunc("POST /login", s.login)
+	}
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if !s.hostOK(r) {
 			http.Error(w, "forbidden", http.StatusForbidden)
+			return
+		}
+		if s.local {
+			// The router's panel: everything but the icon needs the password.
+			if !s.loggedIn(r) && r.URL.Path != "/icon.svg" {
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				w.Header().Set("Cache-Control", "no-store")
+				fmt.Fprint(w, loginPage(""))
+				return
+			}
+			w.Header().Set("Cache-Control", "no-cache")
+			w.Header().Set("Content-Security-Policy", "default-src 'self'; img-src * data:; style-src 'self' 'unsafe-inline'")
+			static.ServeHTTP(w, r)
 			return
 		}
 		// The token in the first URL becomes a cookie; the page then sends it on every API call.
@@ -139,11 +168,75 @@ func (s *Server) Handler() http.Handler {
 }
 
 // hostOK blocks DNS-rebinding: only our exact loopback address may be used as Host.
-func (s *Server) hostOK(r *http.Request) bool { return r.Host == s.addr }
+func (s *Server) hostOK(r *http.Request) bool {
+	if s.local {
+		return fromHomeNetwork(r)
+	}
+	return r.Host == s.addr
+}
+
+// fromHomeNetwork lets the router's panel answer only devices in private (home) networks,
+// never the internet side.
+func fromHomeNetwork(r *http.Request) bool {
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return false
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && (ip.IsPrivate() || ip.IsLoopback() || ip.IsLinkLocalUnicast())
+}
+
+// loggedIn checks the session cookie of the router's panel.
+func (s *Server) loggedIn(r *http.Request) bool {
+	c, err := r.Cookie("kw")
+	return err == nil && subtle.ConstantTimeCompare([]byte(c.Value), []byte(s.token)) == 1
+}
+
+// login checks the panel password; failed attempts are slowed down and serialized.
+func (s *Server) login(w http.ResponseWriter, r *http.Request) {
+	if !s.hostOK(r) {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	s.loginMu.Lock()
+	defer s.loginMu.Unlock()
+	hash := s.st.Get().Panel.PassHash
+	pw := r.PostFormValue("password")
+	if hash == "" || bcrypt.CompareHashAndPassword([]byte(hash), []byte(pw)) != nil {
+		time.Sleep(2 * time.Second)
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprint(w, loginPage("Неверный пароль"))
+		return
+	}
+	http.SetCookie(w, &http.Cookie{Name: "kw", Value: s.token, Path: "/", MaxAge: 30 * 24 * 3600, SameSite: http.SameSiteStrictMode})
+	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+func loginPage(errText string) string {
+	msg := ""
+	if errText != "" {
+		msg = `<p class="err">` + errText + `</p>`
+	}
+	return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay</title><link rel="icon" href="icon.svg" type="image/svg+xml"><style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#14161f;--muted:#5d6377;--border:#dfe2ec;--accent:#5b54e8}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1018;--card:#171a26;--text:#eceef7;--muted:#9aa0bb;--border:#2a2f44;--accent:#8b85ff}}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:16px}
+form{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;width:min(360px,100%);display:flex;flex-direction:column;gap:14px}
+h1{margin:0;font-size:1.4rem;display:flex;gap:10px;align-items:center}h1 span{color:var(--accent)}p{margin:0;color:var(--muted)}
+input{font:inherit;padding:11px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text)}
+button{font:inherit;font-weight:600;padding:11px;border:0;border-radius:10px;background:var(--accent);color:#fff;cursor:pointer}.err{color:#e5484d}
+</style></head><body><form method="post" action="/login">
+<h1><img src="icon.svg" alt="" width="30" height="30">Keen<span>Way</span></h1>
+<p>Панель роутера. Пароль задаётся командой <code>keenway panel password</code>.</p>` + msg + `
+<input type="password" name="password" placeholder="Пароль панели" autocomplete="current-password" autofocus required>
+<button>Войти</button></form></body></html>`
+}
 
 func (s *Server) guard(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !s.hostOK(r) || subtle.ConstantTimeCompare([]byte(r.Header.Get("X-KeenWay")), []byte(s.token)) != 1 {
+		if !s.hostOK(r) || (s.local && !s.loggedIn(r)) || subtle.ConstantTimeCompare([]byte(r.Header.Get("X-KeenWay")), []byte(s.token)) != 1 {
 			http.Error(w, "forbidden", http.StatusForbidden)
 			return
 		}
@@ -187,8 +280,14 @@ type catalogEntry struct {
 	Includes string `json:"includes"`
 }
 
-func (s *Server) getState(http.ResponseWriter, *http.Request) (any, error) {
+func (s *Server) getState(_ http.ResponseWriter, r *http.Request) (any, error) {
 	st := s.st.Get()
+	if s.local {
+		// links to zashboard etc. must use the address the browser already reaches the router by
+		if h, _, err := net.SplitHostPort(r.Host); err == nil {
+			st.Router.Host = h
+		}
+	}
 	var catalog []catalogEntry
 	for _, svc := range gen.Services {
 		catalog = append(catalog, catalogEntry{svc.ID, svc.Name, svc.Icon, svc.ViaVPN, svc.Default, svc.Category, svc.Includes()})
@@ -216,6 +315,7 @@ func (s *Server) getState(http.ResponseWriter, *http.Request) (any, error) {
 		"lastApplied":     st.LastApplied,
 		"currentPending":  s.pendingChanges(st),
 		"templateUpdater": s.updaterFlag(),
+		"panel":           s.local,
 	}, nil
 }
 
@@ -243,6 +343,9 @@ func (s *Server) updaterFlag() any {
 }
 
 func (s *Server) routerPassword() string {
+	if s.local {
+		return "local" // the panel runs on the router: no SSH password needed
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.password != "" {
@@ -254,6 +357,9 @@ func (s *Server) routerPassword() string {
 // ---------- router ----------
 
 func (s *Server) connect(ctx context.Context) (*router.Conn, error) {
+	if s.local {
+		return router.Local(), nil
+	}
 	st := s.st.Get()
 	pw := s.routerPassword()
 	if pw == "" {
@@ -619,7 +725,7 @@ func (s *Server) apply(w http.ResponseWriter, r *http.Request) {
 // otherwise none (a router that was never configured by the app).
 func (s *Server) liveSecret(ctx context.Context, st store.State) string {
 	for _, secret := range []string{st.Settings.Secret, ""} {
-		if _, err := mihomo.New(st.Router.Host, secret).Version(ctx); err == nil {
+		if _, err := mihomo.New(s.mihomoHost(st), secret).Version(ctx); err == nil {
 			return secret
 		}
 	}
@@ -674,9 +780,17 @@ func (s *Server) revealSecret(http.ResponseWriter, *http.Request) (any, error) {
 
 // ---------- live status via the mihomo API ----------
 
+// mihomoHost is where the mihomo API is: the router itself for the panel, the router's IP otherwise.
+func (s *Server) mihomoHost(st store.State) string {
+	if s.local {
+		return "127.0.0.1"
+	}
+	return st.Router.Host
+}
+
 func (s *Server) mihomo(ctx context.Context) *mihomo.Client {
 	st := s.st.Get()
-	return mihomo.New(st.Router.Host, s.liveSecret(ctx, st))
+	return mihomo.New(s.mihomoHost(st), s.liveSecret(ctx, st))
 }
 
 func (s *Server) status(_ http.ResponseWriter, r *http.Request) (any, error) {

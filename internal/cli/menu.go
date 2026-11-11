@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"os"
 	"strconv"
 	"strings"
 
@@ -29,6 +30,10 @@ func (a *App) menu(ctx context.Context) {
 		{"Проверить и применить на роутере", a.menuApply},
 		{"Настройки", a.menuSettings},
 	}
+	if !a.remote {
+		items = append(items, item{"Веб-панель: KeenWay в браузере с телефона и ПК", a.menuPanel})
+	}
+	items = append(items, item{"♥ Поддержать проект", func(context.Context) error { a.donate(); return nil }})
 	a.banner(ctx)
 	for {
 		a.p("")
@@ -224,6 +229,29 @@ func (a *App) menuSettings(ctx context.Context) error {
 		return a.command(ctx, []string{"backups"})
 	case "7":
 		return a.command(ctx, []string{"config"})
+	}
+	return nil
+}
+
+func (a *App) menuPanel(ctx context.Context) error {
+	if err := a.panel(ctx, nil); err != nil {
+		return err
+	}
+	if _, err := os.Stat(panelInit); err != nil {
+		if a.confirm("Включить веб-панель?") {
+			return a.panel(ctx, []string{"on"})
+		}
+		return nil
+	}
+	switch a.ask("1 — сменить пароль, 2 — перезапустить, 3 — выключить: ") {
+	case "1":
+		return a.panel(ctx, []string{"password"})
+	case "2":
+		return a.panel(ctx, []string{"restart"})
+	case "3":
+		if a.confirm("Выключить веб-панель?") {
+			return a.panel(ctx, []string{"off"})
+		}
 	}
 	return nil
 }

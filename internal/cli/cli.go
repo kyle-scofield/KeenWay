@@ -306,6 +306,11 @@ func (a *App) command(ctx context.Context, args []string) error {
 		return a.ensureImported(ctx)
 	case "password":
 		return a.password(rest)
+	case "panel":
+		return a.panel(ctx, rest)
+	case "donate", "support":
+		a.donate()
+		return nil
 	case "updater":
 		return a.updater(ctx, rest)
 	case "update":
@@ -359,7 +364,15 @@ func (a *App) help() {
 	a.p("  keenway password set|show|off   пароль панели zashboard (порт 9090)")
 	a.p("  keenway updater status|off      автообновление шаблона rockblack (update-config.sh)")
 	a.p("  keenway config                  показать итоговый config.yaml")
+	a.p("  keenway panel on|off|password   веб-панель KeenWay на роутере (браузер, с паролем)")
 	a.p("  keenway update | uninstall      обновить | удалить KeenWay")
+	a.p("")
+	a.donate()
+}
+
+// donate prints the "support the project" line.
+func (a *App) donate() {
+	a.p("  %s Поддержать проект: карта %s", a.rgb(139, 133, 255, "♥"), a.bold(DonateCard))
 }
 
 // ---------- status ----------
@@ -1129,6 +1142,12 @@ func (a *App) uninstall() error {
 	if a.remote {
 		if cfg, err := os.UserConfigDir(); err == nil {
 			dir = filepath.Join(cfg, "KeenWay")
+		}
+	}
+	if !a.remote {
+		if _, err := os.Stat(panelInit); err == nil {
+			panelCtl("stop")
+			os.Remove(panelInit)
 		}
 	}
 	if a.confirm("Удалить и сохранённые настройки KeenWay (" + dir + ")?") {
