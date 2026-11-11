@@ -3,7 +3,6 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/scroge071-cloud/KeenWay/releases/latest"><img src="https://img.shields.io/github/v/release/scroge071-cloud/KeenWay?label=%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%8F&color=8b85ff" alt="версия"></a>
   <img src="https://img.shields.io/badge/Keenetic-XKeen%20%2B%20mihomo-8b85ff" alt="Keenetic">
   <img src="https://img.shields.io/badge/Windows%20%C2%B7%20Linux%20%C2%B7%20macOS-%D1%83%D0%BF%D1%80%D0%B0%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5-555" alt="платформы">
 </p>
