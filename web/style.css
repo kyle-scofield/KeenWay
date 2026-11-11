@@ -124,6 +124,10 @@ nav .donate { margin: 0 4px 8px; padding: 9px 12px; border-radius: 10px; text-de
 nav .donate:hover { filter: brightness(1.12); }
 .donate-card .card-number { font: 700 1.55rem/1.2 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: .06em; text-align: center; padding: 18px 12px; border-radius: 12px; background: var(--surface-2); user-select: all; }
 
+nav .update-btn { all: unset; cursor: pointer; margin: 0 4px 6px; padding: 9px 12px; border-radius: 10px; text-align: center; font-weight: 600; background: var(--good-soft); color: var(--good); }
+nav .update-btn[hidden] { display: none; }
+pre.notes { white-space: pre-wrap; max-height: 220px; overflow: auto; background: var(--surface-2); padding: 10px 12px; border-radius: 10px; font-size: .85rem; margin: 0; }
+
 /* phones (the router's web panel is often opened from one) */
 @media (max-width: 760px) {
   body { flex-direction: column; }
@@ -132,7 +136,7 @@ nav .donate:hover { filter: brightness(1.12); }
   nav .brand div { display: none; }
   nav button { flex: none; white-space: nowrap; padding: 8px 10px; }
   nav .spacer, nav .router-state { display: none; }
-  nav .donate { flex: none; margin: 0; white-space: nowrap; }
+  nav .donate, nav .update-btn { flex: none; margin: 0; white-space: nowrap; }
   main { padding: 16px 16px 140px; overflow: visible; }
   .applybar { flex-wrap: wrap; left: 0; padding: 10px 16px; }
   .grid, .grid.small { grid-template-columns: 1fr !important; }

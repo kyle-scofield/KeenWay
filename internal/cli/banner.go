@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"keenway/internal/update"
 	"os"
 	"strconv"
 	"strings"
@@ -47,6 +48,9 @@ func (a *App) banner(ctx context.Context) {
 	a.logo()
 	if line := a.statusLine(ctx); line != "" {
 		a.p("  %s", line)
+	}
+	if tag := a.newerVersion(ctx); tag != "" {
+		a.p("  %s Вышла новая версия %s — обновить: %s", a.yellow("⬆"), a.bold(tag), a.bold("keenway update"))
 	}
 }
 
@@ -111,4 +115,15 @@ func (a *App) statusLine(ctx context.Context) string {
 		}
 	}
 	return strings.Join(parts, " · ")
+}
+
+// newerVersion returns the newest release tag if it is newer than this program ("" otherwise).
+func (a *App) newerVersion(ctx context.Context) string {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	rel, err := update.Latest(ctx, Repo)
+	if err != nil || !update.Newer(rel.Tag, a.Version) {
+		return ""
+	}
+	return rel.Tag
 }

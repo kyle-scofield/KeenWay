@@ -842,6 +842,7 @@ pages.settings = async function () {
       } }, 'Показать список'))),
     notifyCard(),
     backupCard(),
+    versionCard(),
     h('div', { class: 'card stack' }, h('h2', { style: 'margin-top:0' }, 'Конфиг'),
       h('div', { class: 'row' }, h('button', { class: 'btn', onclick: showPreview }, 'Посмотреть итоговый config.yaml'))),
   );
@@ -871,6 +872,63 @@ async function showPreview() {
       h('div', { class: 'card', style: 'width:min(900px,100%)' }, h('div', { class: 'row between' }, h('h2', { style: 'margin:0' }, 'config.yaml'), h('button', { class: 'btn', onclick: () => modal.remove() }, 'Закрыть')), h('pre', { class: 'yaml' }, yaml)));
     document.body.append(modal);
   } catch (e) { toast(e.message, 6000); }
+}
+
+// ---------- updates of KeenWay ----------
+S.version = null;
+async function checkVersion() {
+  try { S.version = await api('GET', '/version'); } catch { return; }
+  const btn = document.getElementById('updateBtn');
+  btn.hidden = !S.version.newer;
+  btn.textContent = `⬆️ Обновить до ${S.version.latest}`;
+}
+function showUpdate() {
+  const v = S.version || {};
+  const status = h('div', { class: 'muted small' });
+  const goBtn = h('button', { class: 'btn primary', onclick: async () => {
+    goBtn.disabled = true;
+    status.textContent = 'Скачивание и установка…';
+    try {
+      const r = await api('POST', '/update');
+      if (r.newWindow) {
+        status.textContent = `Готово: KeenWay ${r.to} открывается в новом окне. Это окно можно закрыть.`;
+        setTimeout(() => window.close(), 4000);
+        return;
+      }
+      status.textContent = 'Обновление ставится на роутер, панель перезапустится (до минуты)…';
+      const started = Date.now();
+      const wait = async () => {
+        try { const nv = await api('GET', '/version'); if (nv.current === r.to) { location.reload(); return; } } catch { /* restarting */ }
+        if (Date.now() - started > 180_000) { status.textContent = 'Панель не вернулась за 3 минуты. Проверьте на роутере: keenway panel status'; goBtn.disabled = false; return; }
+        setTimeout(wait, 3000);
+      };
+      setTimeout(wait, 5000);
+    } catch (e) { status.textContent = '⚠️ ' + e.message; goBtn.disabled = false; }
+  } }, `Обновить до ${v.latest}`);
+  const modal = h('div', { class: 'modal', onclick: (e) => { if (e.target === modal) modal.remove(); } },
+    h('div', { class: 'card stack' },
+      h('h2', { style: 'margin:0' }, `Новая версия KeenWay ${v.latest}`),
+      h('p', { class: 'muted' }, `Сейчас установлена ${v.current}. Настройки и конфиг роутера при обновлении не меняются.`),
+      v.notes ? h('pre', { class: 'notes' }, v.notes) : null,
+      v.url ? h('a', { href: v.url, target: '_blank', rel: 'noopener' }, 'Что нового на GitHub') : null,
+      status,
+      h('div', { class: 'row', style: 'justify-content:flex-end' }, h('button', { class: 'btn', onclick: () => modal.remove() }, 'Позже'), goBtn)));
+  document.body.append(modal);
+}
+function versionCard() {
+  const out = h('div', { class: 'row' });
+  const render = () => {
+    const v = S.version;
+    out.replaceChildren(
+      h('span', {}, `Версия ${v?.current || '?'}`),
+      !v ? null : v.newer ? h('button', { class: 'btn primary sm', onclick: showUpdate }, `Обновить до ${v.latest}`)
+        : v.error ? h('span', { class: 'muted small' }, `проверить обновления не удалось: ${v.error}`)
+        : h('span', { class: 'pill good' }, 'последняя'),
+      h('button', { class: 'btn sm', onclick: async () => { await checkVersion(); render(); } }, 'Проверить обновления'));
+  };
+  render();
+  return h('div', { class: 'card stack' }, h('h2', { style: 'margin-top:0' }, 'KeenWay'), out,
+    h('div', {}, h('button', { class: 'btn sm', onclick: showDonate }, '💜 Поддержать проект')));
 }
 
 // ---------- support ----------
@@ -984,6 +1042,7 @@ async function runApply(dry) {
   close.disabled = false;
 }
 document.getElementById('applyBtn').onclick = () => runApply(false);
+document.getElementById('updateBtn').onclick = showUpdate;
 document.getElementById('donateBtn').onclick = (e) => { e.preventDefault(); showDonate(); };
 document.getElementById('dryBtn').onclick = () => runApply(true);
 document.getElementById('previewBtn').onclick = async () => { await flushSave(); showPreview(); };
@@ -991,4 +1050,4 @@ document.getElementById('previewBtn').onclick = async () => { await flushSave();
 // ---------- start ----------
 setInterval(() => api('POST', '/ping').catch(() => {}), 10000);
 api('POST', '/ping').catch(() => {});
-loadState().then(() => { const want = location.hash.slice(1); if (want === 'donate') showDonate(); go(S.state.hasPassword ? (pages[want] ? want : 'overview') : 'settings'); }).catch((e) => mount(h('div', { class: 'alert bad' }, e.message)));
+loadState().then(() => { checkVersion(); const want = location.hash.slice(1); if (want === 'donate') showDonate(); go(S.state.hasPassword ? (pages[want] ? want : 'overview') : 'settings'); }).catch((e) => mount(h('div', { class: 'alert bad' }, e.message)));

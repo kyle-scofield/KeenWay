@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -22,6 +23,7 @@ import (
 	"keenway/internal/router"
 	"keenway/internal/store"
 	"keenway/internal/sub"
+	"keenway/internal/update"
 )
 
 // App is one run of the terminal program.
@@ -1126,6 +1128,24 @@ func (a *App) updater(ctx context.Context, args []string) error {
 var Repo = "scroge071-cloud/KeenWay"
 
 func (a *App) selfUpdate() error {
+	if a.remote && runtime.GOOS == "windows" {
+		// no sh on Windows: download the new program file directly
+		ctx := context.Background()
+		rel, err := update.Latest(ctx, Repo)
+		if err != nil {
+			return err
+		}
+		if !update.Newer(rel.Tag, a.Version) {
+			a.p("%s Уже установлена последняя версия (%s)", a.green("✔"), a.Version)
+			return nil
+		}
+		a.p("Скачивание KeenWay %s…", rel.Tag)
+		if _, err := update.ReplaceSelf(ctx, Repo, rel.Tag, true); err != nil {
+			return err
+		}
+		a.p("%s KeenWay обновлён: %s → %s", a.green("✔"), a.Version, rel.Tag)
+		return nil
+	}
 	url := "https://raw.githubusercontent.com/" + Repo + "/main/install.sh"
 	a.p("Обновление KeenWay с %s", url)
 	cmd := exec.Command("sh", "-c", "curl -fsSL "+url+" | sh")

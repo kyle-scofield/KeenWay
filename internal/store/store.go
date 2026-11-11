@@ -34,6 +34,9 @@ type State struct {
 type Panel struct {
 	Port     int    `json:"port,omitempty"`
 	PassHash string `json:"passHash,omitempty"` // bcrypt
+	// Session is the sign-in cookie value; it survives restarts and updates and is
+	// replaced when the password changes (which signs everyone out).
+	Session string `json:"session,omitempty"`
 }
 
 // Notify holds the Telegram notification settings (installed on the router).

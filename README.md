@@ -22,7 +22,7 @@ curl -fsSL https://raw.githubusercontent.com/scroge071-cloud/KeenWay/main/instal
 
 На компьютере с Linux или macOS эта же команда ставит KeenWay для управления роутером по сети: `keenway` — меню в терминале, `keenway gui` — окно. Для Windows — `KeenWay-windows.exe` в релизах.
 
-Той же командой KeenWay обновляется (или `keenway update`). Удаление: `keenway uninstall`.
+Когда выходит новая версия, KeenWay сам об этом скажет: в окне и веб-панели появится кнопка «⬆️ Обновить», в терминале — строка под логотипом. Обновить можно и командой `keenway update` или той же командой установки. Удаление: `keenway uninstall`.
 
 ### Веб-панель (по желанию)
 

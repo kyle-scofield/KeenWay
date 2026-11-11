@@ -17,6 +17,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -29,6 +30,7 @@ import (
 	"keenway/internal/router"
 	"keenway/internal/store"
 	"keenway/internal/sub"
+	"keenway/internal/update"
 )
 
 // Server serves the UI and the JSON API on 127.0.0.1 only.
@@ -48,13 +50,22 @@ type Server struct {
 	// is by the panel password from the home network instead of the window's one-time link.
 	local   bool
 	loginMu sync.Mutex
+	// Version is this program's version and Repo the GitHub "owner/name" updates come from.
+	Version, Repo string
+	// Relaunch restarts the window program after an update (set by main).
+	Relaunch func(path string)
 }
 
 // NewPanel is the server for the web panel on the router (keenway serve).
 func NewPanel(st *store.Store, ui fs.FS) *Server {
 	s := New(st, ui)
 	s.local = true
-	s.templateUpdater = nil
+	// the sign-in survives restarts and updates
+	if t := st.Get().Panel.Session; t != "" {
+		s.token = t
+	} else {
+		st.Update(func(x *store.State) { x.Panel.Session = s.token })
+	}
 	return s
 }
 
@@ -109,6 +120,8 @@ func (s *Server) Handler() http.Handler {
 		"GET /api/notify":               s.getNotify,
 		"PUT /api/notify":               s.putNotify,
 		"POST /api/notify/chat":         s.findChat,
+		"GET /api/version":              s.version,
+		"POST /api/update":              s.selfUpdate,
 	}
 	for route, h := range api {
 		mux.HandleFunc(route, s.guard(func(w http.ResponseWriter, r *http.Request) {
@@ -776,6 +789,51 @@ func (s *Server) disableUpdater(_ http.ResponseWriter, r *http.Request) (any, er
 // which is the recovery path when the user forgets it.
 func (s *Server) revealSecret(http.ResponseWriter, *http.Request) (any, error) {
 	return map[string]string{"secret": s.st.Get().Settings.Secret}, nil
+}
+
+// ---------- updates of KeenWay itself ----------
+
+func (s *Server) version(_ http.ResponseWriter, r *http.Request) (any, error) {
+	resp := map[string]any{"current": s.Version}
+	rel, err := update.Latest(r.Context(), s.Repo)
+	if err != nil {
+		resp["error"] = err.Error()
+		return resp, nil
+	}
+	resp["latest"], resp["url"], resp["notes"] = rel.Tag, rel.URL, rel.Notes
+	resp["newer"] = update.Newer(rel.Tag, s.Version)
+	return resp, nil
+}
+
+// selfUpdate installs the newest release. On the router the installer runs detached and
+// restarts the panel; on a computer the program file is replaced and the window reopens.
+func (s *Server) selfUpdate(_ http.ResponseWriter, r *http.Request) (any, error) {
+	rel, err := update.Latest(r.Context(), s.Repo)
+	if err != nil {
+		return nil, err
+	}
+	if !update.Newer(rel.Tag, s.Version) {
+		return nil, fmt.Errorf("уже установлена последняя версия (%s)", s.Version)
+	}
+	if s.local {
+		url := "https://raw.githubusercontent.com/" + s.Repo + "/main/install.sh"
+		script := "(sleep 2; curl -fsSL " + url + " | sh) >/opt/var/log/keenway-update.log 2>&1 &"
+		if err := exec.Command("sh", "-c", script).Run(); err != nil {
+			return nil, err
+		}
+		return map[string]any{"restarting": true, "to": rel.Tag}, nil
+	}
+	path, err := update.ReplaceSelf(r.Context(), s.Repo, rel.Tag, false)
+	if err != nil {
+		return nil, err
+	}
+	if s.Relaunch != nil {
+		go func() {
+			time.Sleep(time.Second)
+			s.Relaunch(path)
+		}()
+	}
+	return map[string]any{"restarting": true, "to": rel.Tag, "newWindow": true}, nil
 }
 
 // ---------- live status via the mihomo API ----------

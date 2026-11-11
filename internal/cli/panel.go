@@ -166,7 +166,7 @@ func (a *App) setPanelPassword() error {
 	if err != nil {
 		return err
 	}
-	return a.E.St.Update(func(st *store.State) { st.Panel.PassHash = string(hash) })
+	return a.E.St.Update(func(st *store.State) { st.Panel.PassHash, st.Panel.Session = string(hash), "" })
 }
 
 func (a *App) panelURLs(port int) {

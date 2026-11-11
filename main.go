@@ -20,6 +20,7 @@ import (
 	"keenway/internal/app"
 	"keenway/internal/cli"
 	"keenway/internal/store"
+	"keenway/internal/update"
 )
 
 //go:embed web
@@ -55,6 +56,7 @@ func main() {
 		os.Exit(cli.New(st, version).Run(os.Args[1:]))
 	}
 
+	update.CleanOld() // the previous version left after an update
 	args := os.Args[1:]
 	if !wantWindow(args) {
 		// On a computer, in a terminal: the same menu and commands as on the router,
@@ -80,6 +82,15 @@ func main() {
 	}
 	ui, _ := fs.Sub(webFiles, "web")
 	srv := app.New(st, ui)
+	srv.Version, srv.Repo = version, cli.Repo
+	srv.Relaunch = func(path string) {
+		// the new version opens its own window; this one exits
+		if err := update.Restart(path, []string{"gui"}); err != nil {
+			log.Printf("перезапуск: %v", err)
+			return
+		}
+		os.Exit(0)
+	}
 	ln, url, err := srv.Listen()
 	if err != nil {
 		log.Fatalf("не удалось запустить: %v", err)
@@ -112,6 +123,7 @@ func servePanel(st *store.Store) {
 	}
 	ui, _ := fs.Sub(webFiles, "web")
 	srv := app.NewPanel(st, ui)
+	srv.Version, srv.Repo = version, cli.Repo
 	addr := fmt.Sprintf(":%d", port)
 	log.Printf("KeenWay %s: панель на порту %d", version, port)
 	server := &http.Server{Addr: addr, Handler: srv.Handler(), ReadHeaderTimeout: 10 * time.Second}
