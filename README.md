@@ -57,6 +57,7 @@ keenway panel off         # выключить и убрать из автоза
 | `keenway check` · `keenway apply` | проверить конфиг · применить на роутере |
 | `keenway rollback` | вернуть прежний конфиг |
 | `keenway password set` | пароль на zashboard (порт 9090) |
+| `keenway logs` · `keenway logs router` | живой лог mihomo с фильтром · журналы роутера (в окне — страница «Логи» с поиском) |
 | `keenway panel on` | веб-панель на роутере (браузер, с паролем) |
 | `keenway updater off` | отключить `update-config.sh`, который перезаписывает правила |
 

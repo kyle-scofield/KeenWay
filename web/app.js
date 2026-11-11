@@ -103,9 +103,12 @@ async function flushSave() {
 
 // ---------- navigation ----------
 const pages = {};
-function go(name) {
+function go(name, opts) {
   S.timers.forEach(clearInterval);
   S.timers = [];
+  (S.aborts || []).forEach((a) => a.abort()); // live streams of the previous page
+  S.aborts = [];
+  S.pageOpts = opts || {};
   S.page = name;
   document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('on', b.dataset.page === name));
   if (!S.state.hasPassword && name !== 'settings') return pages.connect();
@@ -748,6 +751,139 @@ pages.traffic = async function () {
   S.timers.push(setInterval(() => S.page === 'traffic' && draw().catch(() => {}), 3000));
 };
 
+// ---------- logs ----------
+const LOG_LEVELS = [['debug', 'Всё'], ['info', 'Инфо'], ['warning', 'Предупреждения'], ['error', 'Ошибки']];
+const LOG_MAX = 3000;
+
+// logView is a log window: lines with levels, search with highlighting, level filter,
+// pause, autoscroll, copy. add() appends; set() replaces everything.
+function logView({ height = '62vh' } = {}) {
+  let all = [];
+  let query = '';
+  let paused = false;
+  const box = h('div', { class: 'logbox', style: `height:${height}` });
+  const counter = h('span', { class: 'muted small' });
+  const esc = (t) => t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const lineEl = (l) => {
+    const el = h('div', { class: `logline lv-${l.level || 'plain'}` });
+    let html = (l.time ? `<span class="lt">${esc(l.time)}</span> ` : '') + (l.level && l.level !== 'plain' ? `<span class="ll">${esc(l.level)}</span> ` : '') + esc(l.message);
+    if (query) {
+      const q = esc(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      html = html.replace(new RegExp(`(${q})(?![^<]*>)`, 'gi'), '<mark>$1</mark>');
+    }
+    el.innerHTML = html;
+    return el;
+  };
+  const matches = (l) => !query || `${l.time || ''} ${l.level || ''} ${l.message}`.toLowerCase().includes(query.toLowerCase());
+  const atBottom = () => box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+  const count = () => { const shown = query ? all.filter(matches).length : all.length; counter.textContent = query ? `найдено ${shown} из ${all.length}` : `${all.length} строк`; };
+  const redraw = () => {
+    box.replaceChildren(...all.filter(matches).map(lineEl));
+    if (!all.length) box.append(h('div', { class: 'muted small', style: 'padding:8px' }, 'Пока пусто'));
+    box.scrollTop = box.scrollHeight;
+    count();
+  };
+  const search = h('input', { type: 'search', placeholder: 'Поиск по логам…', class: 'grow', oninput: (e) => { query = e.target.value.trim(); redraw(); } });
+  const pauseBtn = h('button', { class: 'btn sm', onclick: () => { paused = !paused; pauseBtn.textContent = paused ? '▶ Продолжить' : '⏸ Пауза'; if (!paused) redraw(); } }, '⏸ Пауза');
+  const copyBtn = h('button', { class: 'btn sm', onclick: async () => {
+    const text = all.filter(matches).map((l) => [l.time, l.level, l.message].filter(Boolean).join(' ')).join('\n');
+    try { await navigator.clipboard.writeText(text); toast('Скопировано'); } catch { toast('Не удалось скопировать'); }
+  } }, 'Копировать');
+  const clearBtn = h('button', { class: 'btn sm', onclick: () => { all = []; redraw(); } }, 'Очистить');
+  const toolbar = h('div', { class: 'row logtools' }, search, counter, pauseBtn, copyBtn, clearBtn);
+  redraw();
+  return {
+    toolbar, box, pauseBtn,
+    add(l) {
+      all.push(l);
+      if (all.length > LOG_MAX) all = all.slice(-LOG_MAX);
+      if (paused) { count(); return; }
+      if (!matches(l)) { count(); return; }
+      const stick = atBottom();
+      if (box.firstChild?.classList?.contains('muted')) box.replaceChildren();
+      box.append(lineEl(l));
+      while (box.childElementCount > LOG_MAX) box.firstChild.remove();
+      if (stick) box.scrollTop = box.scrollHeight;
+      count();
+    },
+    set(lines) { all = lines.slice(-LOG_MAX); redraw(); },
+  };
+}
+
+const fmtTime = (t) => { const d = new Date(t); return isNaN(d) ? '' : d.toLocaleTimeString('ru-RU'); };
+
+async function streamLogs(level, view, status) {
+  const ctrl = new AbortController();
+  S.aborts.push(ctrl);
+  status.textContent = 'подключение…';
+  try {
+    const res = await fetch('/api/logs/live?level=' + level, { headers: { 'X-KeenWay': token }, signal: ctrl.signal });
+    if (!res.ok) throw new Error(`Ошибка ${res.status}`);
+    status.replaceChildren(h('span', { class: 'pill good' }, '● идёт'));
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let i;
+      while ((i = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, i); buf = buf.slice(i + 1);
+        if (!line.trim()) continue;
+        try { const l = JSON.parse(line); view.add({ time: l.time ? fmtTime(l.time) : fmtTime(Date.now()), level: l.level, message: l.message }); } catch { /* skip */ }
+      }
+    }
+    status.replaceChildren(h('span', { class: 'pill warn' }, 'поток закрыт'));
+  } catch (e) {
+    if (e.name === 'AbortError') return;
+    status.replaceChildren(h('span', { class: 'pill bad' }, '⚠️ ' + e.message));
+  }
+}
+
+pages.logs = async function () {
+  const tab = S.pageOpts.tab || localStorage.getItem('kw-log-tab') || 'live';
+  const tabs = seg([['live', '🔴 Живой лог mihomo'], ['router', '🗂 Журналы роутера']], tab, (v) => { try { localStorage.setItem('kw-log-tab', v); } catch { /* ignore */ } go('logs', { tab: v }); });
+  if (tab === 'router') {
+    const view = logView();
+    const picker = h('div', { class: 'row', style: 'flex-wrap:wrap;gap:6px' });
+    const info = h('div', { class: 'muted small' });
+    let files = [];
+    const show = (i) => {
+      [...picker.children].forEach((b, j) => b.classList.toggle('primary', j === i));
+      const f = files[i];
+      info.textContent = f.path + (f.lines.length ? '' : ' — пусто или файла нет');
+      view.set(f.lines.map((m) => ({ level: /error|fatal|fail|ошибк|killed|oom/i.test(m) ? 'error' : /warn/i.test(m) ? 'warning' : 'plain', message: m })));
+    };
+    const load = async () => {
+      picker.replaceChildren(h('span', { class: 'muted small' }, 'Загрузка с роутера…'));
+      try {
+        files = await api('GET', '/logs/router');
+        picker.replaceChildren(...files.map((f, i) => h('button', { class: 'btn sm', onclick: () => show(i) }, `${f.title}${f.lines.length ? ` (${f.lines.length})` : ''}`)));
+        const want = S.pageOpts.file ? files.findIndex((f) => f.path === S.pageOpts.file) : files.findIndex((f) => f.lines.length);
+        show(Math.max(0, want));
+      } catch (e) { picker.replaceChildren(h('span', { class: 'pill bad' }, '⚠️ ' + e.message)); }
+    };
+    mount(
+      h('div', { class: 'row between' }, h('h1', {}, 'Логи'), tabs),
+      h('p', { class: 'muted' }, 'Журналы с роутера: проверка конфига, перезапуски XKeen, обновления, нехватка памяти. Показаны последние 400 строк каждого.'),
+      h('div', { class: 'card stack' }, h('div', { class: 'row between' }, picker, h('button', { class: 'btn sm', onclick: load }, '↻ Обновить')), info, view.toolbar, view.box),
+    );
+    load();
+    return;
+  }
+  const view = logView();
+  const status = h('span');
+  const level = localStorage.getItem('kw-log-level') || 'info';
+  const levelSeg = seg(LOG_LEVELS, level, (v) => { try { localStorage.setItem('kw-log-level', v); } catch { /* ignore */ } go('logs', { tab: 'live' }); });
+  mount(
+    h('div', { class: 'row between' }, h('h1', {}, 'Логи'), tabs),
+    h('p', { class: 'muted' }, 'Что mihomo делает прямо сейчас: каждое соединение — какое устройство, куда, по какому правилу и через какой сервер; ошибки подключения к серверам и загрузки подписок. На роутере ничего не сохраняется — только пока открыта эта страница.'),
+    h('div', { class: 'card stack' }, h('div', { class: 'row between' }, h('div', { class: 'row' }, h('span', {}, 'Уровень:'), levelSeg), status), view.toolbar, view.box),
+  );
+  streamLogs(level, view, status);
+};
+
 // ---------- settings ----------
 
 // ---------- settings: Telegram notifications ----------
@@ -1038,7 +1174,8 @@ async function runApply(dry) {
             box = h('div', { class: 'alert bad' }, '⛔', h('div', { class: 'grow' },
               h('strong', {}, data.error),
               data.untouched ? h('div', { class: 'small', style: 'margin-top:4px' }, 'На роутере ничего не изменилось — он работает на прежних настройках.') : null,
-              data.details ? h('details', { class: 'help', style: 'margin-top:6px' }, h('summary', {}, 'Подробности для опытных'), h('pre', { class: 'yaml', style: 'white-space:pre-wrap' }, data.details)) : null));
+              data.details ? h('details', { class: 'help', style: 'margin-top:6px' }, h('summary', {}, 'Подробности для опытных'), h('pre', { class: 'yaml', style: 'white-space:pre-wrap' }, data.details)) : null,
+              h('div', { style: 'margin-top:8px' }, h('button', { class: 'btn sm', onclick: () => { modal.remove(); go('logs', { tab: 'router' }); } }, '📜 Открыть логи роутера'))));
           }
           status.replaceChildren(box);
         }
@@ -1059,4 +1196,4 @@ document.getElementById('previewBtn').onclick = async () => { await flushSave();
 // ---------- start ----------
 setInterval(() => api('POST', '/ping').catch(() => {}), 10000);
 api('POST', '/ping').catch(() => {});
-loadState().then(() => { checkVersion(); const want = location.hash.slice(1); if (want === 'donate') showDonate(); go(S.state.hasPassword ? (pages[want] ? want : 'overview') : 'settings'); }).catch((e) => mount(h('div', { class: 'alert bad' }, e.message)));
+loadState().then(() => { checkVersion(); const [want, tab] = location.hash.slice(1).split(':'); if (want === 'donate') showDonate(); go(S.state.hasPassword ? (pages[want] ? want : 'overview') : 'settings', tab ? { tab } : undefined); }).catch((e) => mount(h('div', { class: 'alert bad' }, e.message)));

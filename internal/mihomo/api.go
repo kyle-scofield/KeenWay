@@ -342,3 +342,74 @@ func (c *Client) Route(ctx context.Context, host string, port int) (*Route, erro
 	}
 	return nil, fmt.Errorf("соединение не найдено в списке mihomo")
 }
+
+// LogLine is one entry of mihomo's live log.
+type LogLine struct {
+	Time    time.Time `json:"time"`
+	Level   string    `json:"level"` // debug, info, warning, error
+	Message string    `json:"message"`
+}
+
+// Logs streams mihomo's live log (the /logs endpoint) until ctx ends. level is the lowest
+// level to receive. mihomo sends log events to API clients even with log-level: silent.
+func (c *Client) Logs(ctx context.Context, level string, fn func(LogLine)) error {
+	switch level {
+	case "debug", "info", "warning", "error":
+	default:
+		level = "info"
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.Base+"/logs?format=structured&level="+level, nil)
+	if err != nil {
+		return err
+	}
+	if c.Secret != "" {
+		req.Header.Set("Authorization", "Bearer "+c.Secret)
+	}
+	resp, err := (&http.Client{}).Do(req) // no timeout: it is a stream
+	if err != nil {
+		return fmt.Errorf("панель mihomo недоступна: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusUnauthorized {
+		return ErrUnauthorized
+	}
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("mihomo: %s", resp.Status)
+	}
+	sc := bufio.NewScanner(resp.Body)
+	sc.Buffer(make([]byte, 64<<10), 1<<20)
+	for sc.Scan() {
+		var raw struct {
+			Type    string `json:"type"`    // plain format
+			Payload string `json:"payload"` // plain format
+			Time    string `json:"time"`    // structured format
+			Level   string `json:"level"`
+			Message string `json:"message"`
+			Fields  []struct {
+				Key   string `json:"key"`
+				Value string `json:"value"`
+			} `json:"fields"`
+		}
+		if json.Unmarshal(sc.Bytes(), &raw) != nil {
+			continue
+		}
+		l := LogLine{Time: time.Now(), Level: raw.Level, Message: raw.Message}
+		if raw.Payload != "" || raw.Type != "" {
+			l.Level, l.Message = raw.Type, raw.Payload
+		}
+		for _, f := range raw.Fields {
+			l.Message += " " + f.Key + "=" + f.Value
+		}
+		// The router's clock is often in UTC without a zone; for a live stream the moment
+		// the line arrives is exact enough and always in the viewer's time.
+		l.Time = time.Now()
+		if l.Level == "warn" {
+			l.Level = "warning"
+		}
+		fn(l)
+	}
+	if ctx.Err() != nil {
+		return nil
+	}
+	return sc.Err()
+}

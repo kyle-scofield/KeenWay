@@ -28,6 +28,7 @@ func (a *App) menu(ctx context.Context) {
 		{"Через что идёт сайт", a.menuRoute},
 		{"Быстрый режим: всё через VPN / без VPN / игровой", a.menuProfile},
 		{"Проверить и применить на роутере", a.menuApply},
+		{"Логи: живой лог mihomo и журналы роутера", a.menuLogs},
 		{"Настройки", a.menuSettings},
 	}
 	if !a.remote {
@@ -229,6 +230,18 @@ func (a *App) menuSettings(ctx context.Context) error {
 		return a.command(ctx, []string{"backups"})
 	case "7":
 		return a.command(ctx, []string{"config"})
+	}
+	return nil
+}
+
+func (a *App) menuLogs(ctx context.Context) error {
+	switch a.ask("1 — живой лог mihomo (Ctrl+C — выход), 2 — только ошибки, 3 — журналы роутера: ") {
+	case "1":
+		return a.logs(ctx, []string{a.ask("Фильтр (слово или пусто): ")})
+	case "2":
+		return a.logs(ctx, []string{"warning"})
+	case "3":
+		return a.logs(ctx, []string{"router", a.ask("Фильтр (слово или пусто): ")})
 	}
 	return nil
 }

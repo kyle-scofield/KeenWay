@@ -310,6 +310,8 @@ func (a *App) command(ctx context.Context, args []string) error {
 		return a.password(rest)
 	case "panel":
 		return a.panel(ctx, rest)
+	case "logs", "log":
+		return a.logs(ctx, rest)
 	case "donate", "support":
 		a.donate()
 		return nil
@@ -366,6 +368,8 @@ func (a *App) help() {
 	a.p("  keenway password set|show|off   пароль панели zashboard (порт 9090)")
 	a.p("  keenway updater status|off      автообновление шаблона rockblack (update-config.sh)")
 	a.p("  keenway config                  показать итоговый config.yaml")
+	a.p("  keenway logs [error] [слово]    живой лог mihomo с фильтром (Ctrl+C — выход)")
+	a.p("  keenway logs router [слово]     журналы роутера: проверка конфига, XKeen, память")
 	a.p("  keenway panel on|off|password   веб-панель KeenWay на роутере (браузер, с паролем)")
 	a.p("  keenway update | uninstall      обновить | удалить KeenWay")
 	a.p("")

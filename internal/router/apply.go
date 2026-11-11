@@ -52,23 +52,57 @@ func (o ApplyOptions) report(id, name string, ok bool, info string) {
 	}
 }
 
-// Validate uploads the config next to the live one and checks it with mihomo -t.
+// ErrTestNoMemory means "mihomo -t" was killed for lack of memory: the config itself may be
+// fine. A second mihomo needs about as much memory as the running one, which a 256 MB
+// router often doesn't have.
+type ErrTestNoMemory struct{ FreeMB string }
+
+func (e *ErrTestNoMemory) Error() string {
+	return "проверке не хватило памяти роутера (свободно " + e.FreeMB + " МБ)"
+}
+
+// Validate uploads the config next to the live one and checks it with mihomo -t. The test
+// runs with a tight Go memory limit; if it is still killed, page cache is dropped and it is
+// tried once more before giving up with ErrTestNoMemory.
 func (c *Conn) Validate(ctx context.Context, config []byte) error {
 	sum := sha256.Sum256(config)
 	script := fmt.Sprintf(`set -e
 mkdir -p %[1]s
 echo '%[2]s' | base64 -d > %[3]s
 echo "%[4]s  %[3]s" | sha256sum -c - >/dev/null
-mihomo -t -d %[5]s -f %[3]s 2>&1 | tail -n 5
+set +e
+kw_test() { GOGC=20 GOMEMLIMIT=40MiB mihomo -t -d %[5]s -f %[3]s >/tmp/keenway-test.log 2>&1; echo "kw_rc=$?"; }
+kw_test
+if ! grep -q "test is successful" /tmp/keenway-test.log && ! grep -qE "level=(error|fatal)" /tmp/keenway-test.log; then
+  sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null
+  kw_test
+fi
+echo "kw_free=$(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo)"
+tail -n 5 /tmp/keenway-test.log
 `, backupDir, base64.StdEncoding.EncodeToString(config), newConfigPath, hex.EncodeToString(sum[:]), mihomoDir)
 	out, err := c.Shell(ctx, script)
 	if err != nil {
 		return fmt.Errorf("загрузка на роутер: %v", err)
 	}
-	if !strings.Contains(out, "test is successful") {
+	return checkTestOutput(out)
+}
+
+var kwFree = regexp.MustCompile(`kw_free=(\d+)`)
+
+// checkTestOutput reads what the Validate script printed.
+func checkTestOutput(out string) error {
+	if strings.Contains(out, "test is successful") {
+		return nil
+	}
+	if mihomoMsg.MatchString(out) {
 		return &ConfigError{Reason: explainMihomo(out), Raw: lastLines(out, 3)}
 	}
-	return nil
+	// no verdict from mihomo at all: it was killed (out of memory) before finishing
+	free := "?"
+	if m := kwFree.FindStringSubmatch(out); m != nil {
+		free = m[1]
+	}
+	return &ErrTestNoMemory{FreeMB: free}
 }
 
 // reloadScript makes mihomo use config.yaml. Reloading through the API keeps the old
@@ -188,7 +222,16 @@ func (c *Conn) Apply(ctx context.Context, config []byte, o ApplyOptions) error {
 	}
 	canceled := func() bool { return ctx.Err() == context.Canceled }
 
-	if err := c.Validate(ctx, config); err != nil {
+	testNote := "mihomo принял новый конфиг"
+	err := c.Validate(ctx, config)
+	var noMem *ErrTestNoMemory
+	if errors.As(err, &noMem) && !canceled() {
+		// The config is still checked: mihomo loads it on activation, and if it fails the
+		// previous config comes back automatically.
+		testNote = "отдельная проверка не уместилась в памяти роутера (свободно " + noMem.FreeMB + " МБ) — конфиг проверится при включении, с автооткатом"
+		err = nil
+	}
+	if err != nil {
 		if canceled() {
 			rctx, cancel := fresh()
 			c.Shell(rctx, "rm -f "+newConfigPath)
@@ -199,7 +242,7 @@ func (c *Conn) Apply(ctx context.Context, config []byte, o ApplyOptions) error {
 		o.report("upload", "Загрузка и проверка конфига", false, err.Error())
 		return err
 	}
-	o.report("upload", "Загрузка и проверка конфига", true, "mihomo принял новый конфиг")
+	o.report("upload", "Загрузка и проверка конфига", true, testNote)
 	if o.DryRun || canceled() {
 		rctx, cancel := fresh()
 		c.Shell(rctx, "rm -f "+newConfigPath)

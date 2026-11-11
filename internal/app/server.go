@@ -121,6 +121,7 @@ func (s *Server) Handler() http.Handler {
 		"PUT /api/notify":               s.putNotify,
 		"POST /api/notify/chat":         s.findChat,
 		"GET /api/version":              s.version,
+		"GET /api/logs/router":          s.routerLogs,
 		"POST /api/update":              s.selfUpdate,
 	}
 	for route, h := range api {
@@ -136,6 +137,7 @@ func (s *Server) Handler() http.Handler {
 		}))
 	}
 	mux.HandleFunc("POST /api/apply", s.guard(s.apply))
+	mux.HandleFunc("GET /api/logs/live", s.guard(s.liveLogs))
 	mux.HandleFunc("POST /api/apply/cancel", s.guard(func(w http.ResponseWriter, r *http.Request) {
 		s.mu.Lock()
 		cancel := s.cancelApply
@@ -799,6 +801,98 @@ func (s *Server) disableUpdater(_ http.ResponseWriter, r *http.Request) (any, er
 // which is the recovery path when the user forgets it.
 func (s *Server) revealSecret(http.ResponseWriter, *http.Request) (any, error) {
 	return map[string]string{"secret": s.st.Get().Settings.Secret}, nil
+}
+
+// ---------- logs ----------
+
+// liveLogs streams mihomo's log as JSON lines until the page closes it.
+func (s *Server) liveLogs(w http.ResponseWriter, r *http.Request) {
+	fl, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "streaming unsupported", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/x-ndjson; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("X-Accel-Buffering", "no")
+	enc := json.NewEncoder(w)
+	// a first line at once, so the page knows the stream is open
+	enc.Encode(map[string]string{"level": "keenway", "message": "подключено к mihomo, ждём события…"})
+	fl.Flush()
+	err := s.mihomo(r.Context()).Logs(r.Context(), r.URL.Query().Get("level"), func(l mihomo.LogLine) {
+		enc.Encode(l)
+		fl.Flush()
+	})
+	if err != nil && r.Context().Err() == nil {
+		enc.Encode(map[string]string{"level": "error", "message": "поток логов прервался: " + err.Error()})
+		fl.Flush()
+	}
+}
+
+// routerLogFiles are the journals worth reading on the router, newest knowledge first.
+var routerLogFiles = []struct{ Path, Title string }{
+	{"/tmp/keenway-test.log", "Последняя проверка конфига (mihomo -t)"},
+	{"/tmp/keenway-xkeen.log", "Последний перезапуск XKeen"},
+	{"/opt/var/log/xkeen-detached.log", "XKeen"},
+	{"/opt/var/log/mihomo-update.log", "Обновление mihomo"},
+	{"/opt/var/log/keenway-panel.log", "Веб-панель KeenWay"},
+	{"/opt/var/log/keenway-update.log", "Обновление KeenWay"},
+	{"/opt/var/log/keenway-notify.log", "Уведомления в Telegram"},
+}
+
+// routerLogs reads the router's log files (last 400 lines each) in one SSH session,
+// plus memory and kernel messages about killed processes.
+func (s *Server) routerLogs(_ http.ResponseWriter, r *http.Request) (any, error) {
+	ctx, cancel := ctxTimeout(r, 40*time.Second)
+	defer cancel()
+	c, err := s.connect(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer c.Close()
+	var sb strings.Builder
+	for i, f := range routerLogFiles {
+		fmt.Fprintf(&sb, "echo '@@KW %d'; [ -f %s ] && tail -n 400 %s 2>/dev/null; ", i, f.Path, f.Path)
+	}
+	sb.WriteString(`echo '@@KW mem'; free 2>/dev/null; ps 2>/dev/null | grep -E '[m]ihomo|[x]ray|[k]eenway' ; `)
+	sb.WriteString(`echo '@@KW kernel'; dmesg 2>/dev/null | grep -iE 'oom|killed process|out of memory|segfault' | tail -n 50`)
+	out, err := c.Shell(ctx, sb.String())
+	if err != nil && out == "" {
+		return nil, err
+	}
+	type logFile struct {
+		Title string   `json:"title"`
+		Path  string   `json:"path"`
+		Lines []string `json:"lines"`
+	}
+	files := []logFile{}
+	var cur *logFile
+	for _, line := range strings.Split(out, "\n") {
+		if rest, ok := strings.CutPrefix(line, "@@KW "); ok {
+			files = append(files, logFile{})
+			cur = &files[len(files)-1]
+			switch rest {
+			case "mem":
+				cur.Title, cur.Path = "Память и процессы", "free / ps"
+			case "kernel":
+				cur.Title, cur.Path = "Ядро: нехватка памяти и сбои", "dmesg"
+			default:
+				if i, err := strconv.Atoi(rest); err == nil && i < len(routerLogFiles) {
+					cur.Title, cur.Path = routerLogFiles[i].Title, routerLogFiles[i].Path
+				}
+			}
+			continue
+		}
+		if cur != nil && line != "" {
+			cur.Lines = append(cur.Lines, line)
+		}
+	}
+	for i := range files {
+		if files[i].Lines == nil {
+			files[i].Lines = []string{}
+		}
+	}
+	return files, nil
 }
 
 // ---------- updates of KeenWay itself ----------
