@@ -412,9 +412,9 @@ func buildRules(s Settings, enabled map[string]bool, auto string) ([]string, []s
 		ruleSet("ads_domains", "REJECT", false)
 	}
 	ruleSet("apple", "DIRECT", false)
-	for _, d := range []string{"github.com", "githubusercontent.com", "raw.githubusercontent.com"} {
-		rules = append(rules, "DOMAIN-SUFFIX,"+d+",DIRECT")
-	}
+	// GitHub is no longer pinned to DIRECT here: it belongs to the "Разработка" tile, and the
+	// tile's VPN/direct choice must win. (Rule lists are downloaded by mihomo itself, which
+	// does not go through these rules.)
 
 	// Own sites sit above the catalog so they always win.
 	serviceName := map[string]string{}

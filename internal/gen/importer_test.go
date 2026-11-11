@@ -35,7 +35,7 @@ func TestImportRoundTrip(t *testing.T) {
 	}
 	want, got := load(t, ref), load(t, out)
 	a, b := sorted(want.Rules), sorted(got.Rules)
-	if missing := diff(a, b); len(missing) > 0 {
+	if missing := diff(diff(a, b), droppedTemplateRules); len(missing) > 0 {
 		t.Errorf("round trip lost rules: %v", missing)
 	}
 	// Only lists the catalog added on top of the reference may appear.

@@ -92,8 +92,13 @@ func TestMatchesUsersCurrentConfig(t *testing.T) {
 	}
 
 	// The catalog may add lists to a service, but must keep every rule of the reference.
-	if missing := diff(sorted(want.Rules), sorted(got.Rules)); len(missing) > 0 {
+	if missing := diff(diff(sorted(want.Rules), sorted(got.Rules)), droppedTemplateRules); len(missing) > 0 {
 		t.Errorf("rules missing: %v", missing)
+	}
+	for _, r := range got.Rules {
+		if strings.Contains(r, "github.com,DIRECT") {
+			t.Errorf("GitHub must follow its tile, found %s", r)
+		}
 	}
 	if got.Rules[len(got.Rules)-1] != "MATCH,Остальное" || got.Rules[0] != "RULE-SET,geosite-private,DIRECT" {
 		t.Errorf("rule order: first=%s last=%s", got.Rules[0], got.Rules[len(got.Rules)-1])

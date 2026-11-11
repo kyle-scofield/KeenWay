@@ -13,6 +13,9 @@ import (
 // Import reads an existing mihomo config (e.g. from the rockblack generator) back into
 // Settings, so the user's subscriptions, services and hand-added rules survive.
 // Anything it can't map is returned as a warning rather than silently dropped.
+// droppedTemplateRules are template rules KeenWay intentionally no longer generates.
+var droppedTemplateRules = []string{"DOMAIN-SUFFIX,github.com,DIRECT", "DOMAIN-SUFFIX,githubusercontent.com,DIRECT", "DOMAIN-SUFFIX,raw.githubusercontent.com,DIRECT"}
+
 func Import(config []byte) (Settings, []string, error) {
 	var doc struct {
 		Secret         string                    `yaml:"secret"`
@@ -101,6 +104,11 @@ func Import(config []byte) (Settings, []string, error) {
 		for _, r := range d.Rules {
 			catalogRules[r] = true
 		}
+	}
+	// The rockblack template pins GitHub to DIRECT; KeenWay leaves GitHub to the
+	// "Разработка" tile, so these are dropped instead of becoming the user's own sites.
+	for _, r := range droppedTemplateRules {
+		catalogRules[r] = true
 	}
 	sites := map[string]*CustomSite{}
 	var order []string
