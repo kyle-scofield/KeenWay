@@ -61,10 +61,14 @@ func TestMatchesUsersCurrentConfig(t *testing.T) {
 	}
 	for i := range want.ProxyGroups {
 		w, g := want.ProxyGroups[i], got.ProxyGroups[i]
-		for _, k := range []string{"name", "type", "icon", "include-all", "hidden", "url", "interval", "tolerance"} {
+		for _, k := range []string{"name", "type", "icon", "include-all", "hidden", "url", "interval"} {
 			if w[k] != g[k] {
 				t.Errorf("group %v: %s = %v, want %v", w["name"], k, g[k], w[k])
 			}
+		}
+		// tolerance is deliberately lower than the reference's 150 so Auto-Best follows the fastest server
+		if w["tolerance"] != nil && g["tolerance"] != autoTolerance {
+			t.Errorf("group %v: tolerance = %v, want %v", w["name"], g["tolerance"], autoTolerance)
 		}
 		if strings.Join(toStrings(w["proxies"]), "|") != strings.Join(toStrings(g["proxies"]), "|") {
 			t.Errorf("group %v proxies = %v, want %v", w["name"], g["proxies"], w["proxies"])

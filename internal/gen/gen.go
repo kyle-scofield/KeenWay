@@ -76,6 +76,10 @@ type Settings struct {
 	AutoExclude []string `json:"autoExclude"`
 }
 
+// autoTolerance is how much faster (ms) another server must be before url-test switches to it.
+// It only stops flapping between near-equal servers; with 150 a 76 ms server never replaced a 203 ms one.
+const autoTolerance = 30
+
 // DefaultAutoExclude keeps Russian servers out of automatic choice. In subscriptions they are
 // "LTE / whitelist bypass" exits inside Russia: the lowest ping, so url-test would always pick
 // them, yet nothing blocked opens through them.
@@ -344,14 +348,14 @@ func mainGroups(mode, exclude string) ([]M, string) {
 	if mode == "extended" {
 		return []M{
 			{{"name", GroupVPN}, {"type", "select"}, {"icon", iconBase + "Hijacking.png"}, {"proxies", []string{GroupAutoBest, GroupFallback, GroupManual}}},
-			auto(M{{"name", GroupAutoBest}, {"type", "url-test"}, {"hidden", true}, {"icon", iconBase + "Auto.png"}, {"include-all", true}, {"url", testURL}, {"interval", 300}, {"tolerance", 150}}),
+			auto(M{{"name", GroupAutoBest}, {"type", "url-test"}, {"hidden", true}, {"icon", iconBase + "Auto.png"}, {"include-all", true}, {"url", testURL}, {"interval", 300}, {"tolerance", autoTolerance}}),
 			auto(M{{"name", GroupFallback}, {"type", "fallback"}, {"hidden", true}, {"icon", iconBase + "Available.png"}, {"include-all", true}, {"url", testURL}, {"interval", 120}}),
 			{{"name", GroupManual}, {"type", "select"}, {"icon", iconBase + "Static.png"}, {"include-all", true}},
 		}, GroupAutoBest
 	}
 	return []M{
 		{{"name", GroupVPN}, {"type", "select"}, {"icon", iconBase + "Hijacking.png"}, {"include-all", true}, {"proxies", []string{GroupFastest}}},
-		auto(M{{"name", GroupFastest}, {"type", "url-test"}, {"hidden", true}, {"icon", iconBase + "Auto.png"}, {"include-all", true}, {"url", testURL}, {"interval", 300}, {"tolerance", 150}}),
+		auto(M{{"name", GroupFastest}, {"type", "url-test"}, {"hidden", true}, {"icon", iconBase + "Auto.png"}, {"include-all", true}, {"url", testURL}, {"interval", 300}, {"tolerance", autoTolerance}}),
 	}, GroupFastest
 }
 
