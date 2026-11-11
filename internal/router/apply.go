@@ -114,11 +114,16 @@ func reloadScript(secret string) string {
 	if secret != "" {
 		auth = "-H " + shellQuote("Authorization: Bearer "+secret)
 	}
-	return fmt.Sprintf(`avail=$(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo)
+	return fmt.Sprintf(`# XKeen builds its firewall rules (TProxy / Redirect / Hybrid) from the config only when it
+# starts: if the config's inbounds no longer match the running rules, a reload is not enough.
+kw_want=0; grep -qE '^redir-port:|type: *redir' %[2]s && kw_want=1
+kw_have=0; iptables -t nat -S 2>/dev/null | grep xkeen_rule | grep -q REDIRECT && kw_have=1
+echo "redir_config=$kw_want redir_rules=$kw_have"
+avail=$(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo)
 rss=0; for p in $(pidof mihomo); do r=$(awk '/VmRSS/{print int($2/1024)}' /proc/$p/status); [ "${r:-0}" -gt "$rss" ] && rss=$r; done
 echo "mem=${avail}MB mihomo=${rss}MB"
 code=skip
-if [ "${avail:-0}" -gt $((rss + 48)) ]; then
+if [ "$kw_want" = "$kw_have" ] && [ "${avail:-0}" -gt $((rss + 48)) ]; then
   code=$(curl -s -o /tmp/keenway-reload.txt -w '%%{http_code}' -m 25 -X PUT %[1]s -H 'Content-Type: application/json' 'http://127.0.0.1:9090/configs?force=true' -d '{"path":"%[2]s"}') || true
 fi
 echo "reload_code=$code"

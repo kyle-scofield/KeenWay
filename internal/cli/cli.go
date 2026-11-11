@@ -1215,9 +1215,17 @@ func (a *App) apply(ctx context.Context, dry bool) error {
 	}
 	if dry {
 		a.p("%s Конфиг корректен, можно применять: keenway apply", a.green("✔"))
-	} else {
-		a.p("%s Применено. Интернет и VPN работают.", a.green("✔"))
+		return nil
 	}
+	if a.remote {
+		// a computer at home: check the path every device uses, not just the router itself
+		if warn := core.LANCheck(ctx); warn != "" {
+			a.p("%s Применено, но %s", a.yellow("!"), warn)
+			return nil
+		}
+		a.p("  %s Проверка с этого компьютера %s", a.green("✔"), a.dim("сайты открываются через роутер"))
+	}
+	a.p("%s Применено. Интернет и VPN работают.", a.green("✔"))
 	return nil
 }
 

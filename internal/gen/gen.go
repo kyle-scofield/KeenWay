@@ -76,6 +76,12 @@ type Settings struct {
 	AutoExclude []string `json:"autoExclude"`
 }
 
+// Ports of the transparent-proxy inbounds XKeen sends traffic to (XKeen's defaults).
+const (
+	TProxyPort = 1181
+	RedirPort  = 1182
+)
+
 // autoTolerance is how much faster (ms) another server must be before url-test switches to it.
 // It only stops flapping between near-equal servers; with 150 a 76 ms server never replaced a 203 ms one.
 const autoTolerance = 30
@@ -195,7 +201,14 @@ func Build(s Settings) ([]byte, error) {
 	}
 
 	cfg := M{
-		{"listeners", []M{{{"name", "tproxy"}, {"type", "tproxy"}, {"port", 1181}}}},
+		// Both inbounds put XKeen in Hybrid mode (its own default): TCP comes in through
+		// REDIRECT, UDP through TPROXY. With TPROXY alone, KeeneticOS 5 drops TLS packets
+		// delivered locally on port 443 (its web-interface hook), so no HTTPS site opened
+		// from the home network while the router itself was fine.
+		{"listeners", []M{
+			{{"name", "tproxy"}, {"type", "tproxy"}, {"port", TProxyPort}},
+			{{"name", "redir"}, {"type", "redir"}, {"port", RedirPort}},
+		}},
 		{"mixed-port", 1080},
 		{"tcp-concurrent", true},
 		{"allow-lan", true},

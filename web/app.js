@@ -1168,7 +1168,8 @@ async function runApply(dry) {
             box = h('div', { class: 'alert warn' }, '↩️', h('span', { class: 'grow' }, 'Применение отменено. Роутер работает на прежних настройках.'));
           } else if (data.ok) {
             const warned = Object.values(rows).some((r) => r.info.textContent.startsWith('⚠️'));
-            box = h('div', { class: `alert ${warned ? 'warn' : 'good'}` }, warned ? '⚠️' : '🎉', h('span', { class: 'grow' }, dry ? 'Конфиг в порядке — роутер его принял. Можно применять.' : warned ? 'Настройки применены, но серверы VPN пока не отвечают.' : 'Настройки применены.'));
+            const lanWarn = rows.lan?.info.textContent.startsWith('⚠️');
+            box = h('div', { class: `alert ${warned ? 'warn' : 'good'}` }, warned ? '⚠️' : '🎉', h('span', { class: 'grow' }, dry ? 'Конфиг в порядке — роутер его принял. Можно применять.' : lanWarn ? 'Настройки применены, но с этого компьютера сайты через роутер не открываются.' : warned ? 'Настройки применены, но серверы VPN пока не отвечают.' : 'Настройки применены.'));
             if (!dry && !warned) setTimeout(() => { if (modal.isConnected) { modal.remove(); toast('✅ Настройки применены'); loadState().then(() => go(S.page)); } }, 1500);
           } else {
             box = h('div', { class: 'alert bad' }, '⛔', h('div', { class: 'grow' },

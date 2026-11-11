@@ -1,6 +1,9 @@
 package gen
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestEveryServiceBuildsAlone(t *testing.T) {
 	base := Settings{Mode: "simple", Subscriptions: []Subscription{{Name: "Sub", URL: "https://example.com/s"}}}
@@ -31,5 +34,19 @@ func TestUnnamedSiteListIsRepaired(t *testing.T) {
 	}
 	if _, err := Build(s); err != nil {
 		t.Fatal(err)
+	}
+}
+
+// XKeen must run in Hybrid mode: with TPROXY alone HTTPS from the home network fails on KeeneticOS 5.
+func TestHybridInbounds(t *testing.T) {
+	out, err := Build(Settings{Mode: "simple", Subscriptions: []Subscription{{Name: "Sub", URL: "https://example.com/s"}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg := string(out)
+	for _, want := range []string{"type: tproxy", "port: 1181", "type: redir", "port: 1182"} {
+		if !strings.Contains(cfg, want) {
+			t.Errorf("config lacks %q", want)
+		}
 	}
 }

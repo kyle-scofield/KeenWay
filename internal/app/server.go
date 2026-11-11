@@ -743,6 +743,15 @@ func (s *Server) apply(w http.ResponseWriter, r *http.Request) {
 			c.InstallNotify(ctx, router.NotifyConfig{Token: n.Token, ChatID: n.ChatID, Days: n.Days, Secret: st.Settings.Secret, Name: "Роутер " + st.Router.Host}, false)
 		}
 	}
+	if !dry && !s.local {
+		// The router checks the internet from itself; this checks the path every other device
+		// uses (traffic intercepted by XKeen), which can break while the router is fine.
+		if warn := core.LANCheck(ctx); warn != "" {
+			send("step", router.Step{ID: "lan", Name: "Проверка с этого компьютера", OK: true, Info: "⚠️ " + warn})
+		} else {
+			send("step", router.Step{ID: "lan", Name: "Проверка с этого компьютера", OK: true, Info: "сайты открываются через роутер"})
+		}
+	}
 	send("done", map[string]any{"ok": true, "dry": dry})
 }
 
