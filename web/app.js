@@ -68,7 +68,11 @@ async function loadState() {
   S.state.catalog = S.state.catalog || [];
   const set = S.state.settings;
   for (const k of ['subscriptions', 'services', 'sites', 'devices']) set[k] = set[k] || [];
-  document.getElementById('applybar').hidden = !S.state.currentPending || !S.state.imported;
+  document.getElementById('applybar').hidden = !(S.state.currentPending || S.state.buildError) || !S.state.imported;
+  const applyText = document.getElementById('applyText');
+  document.getElementById('applyBtn').disabled = !!S.state.buildError;
+  if (S.state.buildError) applyText.replaceChildren(h('strong', { style: 'color:var(--bad)' }, '⚠️ Конфиг не собирается: '), h('span', { class: 'small' }, S.state.buildError));
+  else applyText.replaceChildren(h('strong', {}, 'Есть неприменённые изменения.'), ' ', h('span', { class: 'muted small' }, 'Они вступят в силу после применения на роутере.'));
   const r = S.state.router;
   document.getElementById('routerState').textContent = S.state.panel ? `Панель роутера ${r.host}` : S.state.hasPassword ? `Роутер ${r.host}` : 'Роутер не подключён';
 }
@@ -463,7 +467,12 @@ function siteEditor(site, opts = {}) {
   const changed = () => { if (!isNew) saveSettings(); };
 
   const preview = icon(s.icon, 'icon lg');
-  const name = h('input', { value: s.name, placeholder: 'Например: Кинопоиск', onchange: (e) => { s.name = e.target.value.trim(); changed(); } });
+  const name = h('input', { value: s.name, placeholder: 'Например: Кинопоиск', onchange: (e) => {
+    const v = e.target.value.trim();
+    if (!v && !isNew) { e.target.value = s.name; toast('Название не может быть пустым'); return; }
+    if (/[,\n]/.test(v) || v.length > 40) { e.target.value = s.name; toast('Название: до 40 символов, без запятых'); return; }
+    s.name = v; changed();
+  } });
 
   // Domains as chips + an "add" field; works the same for a new site and later.
   const chips = h('div', { class: 'chips' });

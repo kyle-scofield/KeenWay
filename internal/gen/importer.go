@@ -296,6 +296,9 @@ func TidySiteNames(s *Settings) bool {
 			name = SiteTitleFor(id)
 		} else if n, ok := legacy[name]; ok {
 			name = n
+		} else if strings.TrimSpace(name) == "" || !groupName.MatchString(name) {
+			// a list saved without a usable name broke the whole config
+			name = SiteTitleFor(cs.Target)
 		}
 		base := name
 		for n := 2; seen[name]; n++ {

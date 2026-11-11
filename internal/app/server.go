@@ -327,6 +327,7 @@ func (s *Server) getState(_ http.ResponseWriter, r *http.Request) (any, error) {
 		"imported":        st.Imported,
 		"lastApplied":     st.LastApplied,
 		"currentPending":  s.pendingChanges(st),
+		"buildError":      s.buildError(st),
 		"templateUpdater": s.updaterFlag(),
 		"panel":           s.local,
 	}, nil
@@ -339,6 +340,15 @@ func (s *Server) pendingChanges(st store.State) bool {
 		return false
 	}
 	return hash(cfg) != st.LastApplied
+}
+
+// buildError explains why the config can't be built ("" = fine). Without it the apply bar
+// silently stayed hidden and a ticked service seemed to do nothing.
+func (s *Server) buildError(st store.State) string {
+	if _, err := s.buildConfig(st); err != nil {
+		return err.Error()
+	}
+	return ""
 }
 
 func hash(b []byte) string {
