@@ -1020,7 +1020,7 @@ func (s *Server) testGroup(_ http.ResponseWriter, r *http.Request) (any, error) 
 	if err := decode(r, &req); err != nil {
 		return nil, err
 	}
-	ctx, cancel := ctxTimeout(r, 40*time.Second)
+	ctx, cancel := ctxTimeout(r, 120*time.Second)
 	defer cancel()
 	return s.mihomo(ctx).TestGroup(ctx, req.Group)
 }

@@ -197,7 +197,11 @@ const testURL = "http://www.gstatic.com/generate_204"
 // TestGroup measures every server in a group; the result maps server name to delay in ms (0 = failed).
 func (c *Client) TestGroup(ctx context.Context, group string) (map[string]int, error) {
 	out := map[string]int{}
-	err := c.do(ctx, http.MethodGet, "/group/"+url.PathEscape(group)+"/delay?timeout=8000&url="+url.QueryEscape(testURL), nil, &out)
+	// A group of ~100 servers takes longer than the usual 15 s on a weak router:
+	// here only ctx limits the wait.
+	slow := *c
+	slow.HTTP = &http.Client{Transport: c.HTTP.Transport}
+	err := slow.do(ctx, http.MethodGet, "/group/"+url.PathEscape(group)+"/delay?timeout=8000&url="+url.QueryEscape(testURL), nil, &out)
 	if err != nil && strings.Contains(err.Error(), "all proxies timeout") {
 		return out, nil // nothing answered: every server shows as failed
 	}
