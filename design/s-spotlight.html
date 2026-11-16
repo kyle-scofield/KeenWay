@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · S · Командная строка (Spotlight)</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: linear-gradient(180deg, #1b1f2a, #0f1117); color: #eceef3; font: 15px/1.5 system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 50px 16px; }
+.status { display: inline-flex; align-items: center; gap: 10px; background: #ffffff0f; border: 1px solid #ffffff1c; border-radius: 99px; padding: 8px 16px; font-weight: 600; }
+.status i { width: 10px; height: 10px; border-radius: 50%; background: #34d399; box-shadow: 0 0 12px #34d399; }
+.status span { color: #a3a9b8; font-weight: 400; }
+.box { width: 640px; max-width: 100%; margin-top: 26px; background: #1d212c; border: 1px solid #2c3140; border-radius: 18px; box-shadow: 0 30px 80px #0008; overflow: hidden; }
+.q { display: flex; align-items: center; gap: 12px; padding: 18px 20px; border-bottom: 1px solid #2c3140; font-size: 18px; color: #a3a9b8; }
+.q b { color: #eceef3; font-weight: 400; } .q kbd { margin-left: auto; font: 12px ui-monospace, monospace; padding: 3px 7px; border-radius: 6px; background: #2c3140; color: #a3a9b8; }
+.grp { padding: 10px 12px 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #6f7687; }
+.it { display: flex; align-items: center; gap: 12px; margin: 0 8px; padding: 11px 12px; border-radius: 10px; }
+.it .e { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: #2c3140; }
+.it .t { flex: 1; } .it .r { font-size: 13px; color: #6f7687; }
+.it.sel { background: #3b5bdb; } .it.sel .e { background: #ffffff26; } .it.sel .r { color: #dbe4ff; }
+.it .check { color: #34d399; font-weight: 700; }
+.foot { display: flex; gap: 16px; padding: 12px 20px; border-top: 1px solid #2c3140; font-size: 12px; color: #6f7687; margin-top: 8px; }
+.brand { margin-top: 26px; color: #6f7687; font-weight: 700; } .brand b { color: #8ea4ff; }
+</style></head><body>
+<div class="status"><i></i>Защищено <span>🇸🇪 Швеция 287220 · 53 мс · 24 дня</span></div>
+<div class="box">
+  <div class="q">🔍 <b>режим</b><kbd>Ctrl K</kbd></div>
+  <div class="grp">Режим выбора сервера</div>
+  <div class="it sel"><span class="e">🚀</span><span class="t">Auto-Best — самый быстрый</span><span class="r">сейчас ✓</span></div>
+  <div class="it"><span class="e">🛡️</span><span class="t">Fallback — запасной при обрыве</span><span class="r">Enter</span></div>
+  <div class="it"><span class="e">⚙️</span><span class="t">Manual — выбрать сервер</span><span class="r">Enter</span></div>
+  <div class="grp">Быстрые действия</div>
+  <div class="it"><span class="e">⚡</span><span class="t">Пинг всех серверов</span><span class="r">P</span></div>
+  <div class="it"><span class="e">▶️</span><span class="t">YouTube через VPN</span><span class="check">вкл</span></div>
+  <div class="it"><span class="e">🏦</span><span class="t">Банки напрямую</span><span class="check">вкл</span></div>
+  <div class="it"><span class="e">🔑</span><span class="t">Добавить ключ или подписку</span><span class="r">A</span></div>
+  <div class="foot"><span>↑↓ выбрать</span><span>Enter применить</span><span>Esc закрыть</span></div>
+</div>
+<div class="brand">Keen<b>Way</b> · всё управление с клавиатуры</div>
+</body></html>

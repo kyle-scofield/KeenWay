@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · O · Верхнее меню и карточки-режимы</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #f4f6fb; color: #121826; font: 15px/1.5 system-ui, sans-serif; }
+header { display: flex; align-items: center; gap: 28px; padding: 0 32px; height: 64px; background: #fff; border-bottom: 1px solid #e5e8f0; position: sticky; top: 0; }
+.brand { font-weight: 800; font-size: 20px; } .brand b { color: #2563eb; }
+header nav { display: flex; gap: 4px; height: 100%; }
+header nav a { display: flex; align-items: center; padding: 0 14px; color: #5b6478; border-bottom: 3px solid transparent; }
+header nav a.on { color: #2563eb; border-bottom-color: #2563eb; font-weight: 600; }
+.pill { margin-left: auto; background: #dcfce7; color: #15803d; font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 99px; }
+main { max-width: 1040px; margin: 0 auto; padding: 36px 24px; }
+.status { text-align: center; margin-bottom: 34px; }
+.status .s { font-size: 46px; font-weight: 800; letter-spacing: -.02em; } .status .s span { color: #16a34a; }
+.status p { color: #5b6478; font-size: 17px; margin: 6px 0 0; }
+h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .08em; color: #5b6478; margin: 28px 0 12px; }
+.modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.mode { background: #fff; border: 2px solid #e5e8f0; border-radius: 16px; padding: 18px; cursor: pointer; position: relative; }
+.mode .e { font-size: 26px; } .mode b { display: block; font-size: 17px; margin: 6px 0 4px; } .mode p { margin: 0; color: #5b6478; font-size: 14px; }
+.mode.on { border-color: #2563eb; background: #eff4ff; box-shadow: 0 6px 20px #2563eb22; }
+.mode.on::after { content: '✓'; position: absolute; top: 14px; right: 14px; width: 26px; height: 26px; border-radius: 50%; background: #2563eb; color: #fff; display: grid; place-items: center; font-weight: 700; }
+.svc { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.row { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid #e5e8f0; border-radius: 12px; padding: 12px 16px; }
+.row .t { flex: 1; font-weight: 600; } .row .m { font-size: 13px; color: #5b6478; }
+.sw { width: 44px; height: 26px; border-radius: 99px; background: #2563eb; position: relative; } .sw::after { content: ''; position: absolute; right: 3px; top: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; }
+.sw.off { background: #cfd5e2; } .sw.off::after { right: auto; left: 3px; }
+@media (max-width: 760px) { header nav { display: none; } .modes, .svc { grid-template-columns: 1fr; } .status .s { font-size: 34px; } }
+</style></head><body>
+<header><div class="brand">Keen<b>Way</b></div>
+<nav><a class="on">Обзор</a><a>Подключение</a><a>Сервисы</a><a>Сайты</a><a>Устройства</a><a>Серверы</a><a>Настройки</a></nav>
+<span class="pill">● 24 дня подписки</span></header>
+<main>
+  <div class="status"><div class="s">Интернет <span>свободен</span></div><p>🇸🇪 Швеция 287220 · 53 мс · 28 из 3221 ГБ</p></div>
+  <h2>Как выбирать сервер</h2>
+  <div class="modes">
+    <div class="mode on"><div class="e">🚀</div><b>Auto-Best</b><p>Сам берёт самый быстрый сервер и меняет его, если тот тормозит.</p></div>
+    <div class="mode"><div class="e">🛡️</div><b>Fallback</b><p>Держится одного сервера, переключается только при обрыве.</p></div>
+    <div class="mode"><div class="e">⚙️</div><b>Manual</b><p>Вы выбираете сервер сами из списка.</p></div>
+  </div>
+  <h2>Сервисы</h2>
+  <div class="svc">
+    <div class="row">▶️<span class="t">YouTube</span><span class="m">через VPN</span><span class="sw"></span></div>
+    <div class="row">💬<span class="t">Discord</span><span class="m">через VPN</span><span class="sw"></span></div>
+    <div class="row">📷<span class="t">Instagram</span><span class="m">через VPN</span><span class="sw"></span></div>
+    <div class="row">✈️<span class="t">Telegram</span><span class="m">через VPN</span><span class="sw"></span></div>
+    <div class="row">🏦<span class="t">Банки</span><span class="m">напрямую</span><span class="sw off"></span></div>
+    <div class="row">🎮<span class="t">Игры</span><span class="m">напрямую</span><span class="sw off"></span></div>
+  </div>
+</main></body></html>

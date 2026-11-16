@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · W · Узкое меню и график</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: flex; background: #101014; color: #ededf0; font: 15px/1.5 system-ui, sans-serif; }
+.rail { width: 72px; flex: none; background: #17171c; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 0; border-right: 1px solid #26262e; }
+.rail .logo { width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #f59e0b, #ef4444); display: grid; place-items: center; font-weight: 800; margin-bottom: 14px; }
+.rail a { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 20px; opacity: .55; }
+.rail a.on { background: #26262e; opacity: 1; box-shadow: inset 3px 0 0 #f59e0b; }
+main { flex: 1; min-width: 0; padding: 26px 30px; }
+.top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.top h1 { margin: 0; font-size: 24px; } .live { color: #22c55e; font-weight: 700; font-size: 14px; }
+.sw { margin-left: auto; display: flex; gap: 8px; }
+.sw button { font: inherit; display: flex; flex-direction: column; align-items: center; width: 92px; padding: 10px 0; border-radius: 14px; border: 1px solid #26262e; background: #17171c; color: #9a9aa6; cursor: pointer; font-size: 13px; }
+.sw button i { font-style: normal; font-size: 22px; }
+.sw button.on { border-color: #f59e0b; color: #fff; background: linear-gradient(180deg, #f59e0b33, #17171c); }
+.chart { margin-top: 22px; background: #17171c; border: 1px solid #26262e; border-radius: 18px; padding: 18px; }
+.chart h2 { margin: 0 0 8px; font-size: 14px; color: #9a9aa6; font-weight: 600; display: flex; justify-content: space-between; }
+.chart h2 b { color: #ededf0; }
+svg { width: 100%; height: 190px; display: block; }
+.kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }
+.k { background: #17171c; border: 1px solid #26262e; border-radius: 14px; padding: 14px; } .k span { color: #9a9aa6; font-size: 13px; } .k b { display: block; font-size: 22px; }
+@media (max-width: 760px) { .kpi { grid-template-columns: 1fr 1fr; } .sw { margin-left: 0; } }
+</style></head><body>
+<nav class="rail"><div class="logo">K</div><a class="on">🏠</a><a>🔑</a><a>🧩</a><a>🌐</a><a>📱</a><a>🌍</a><a>📊</a><a>⚙️</a></nav>
+<main>
+  <div class="top"><h1>🇸🇪 Швеция 287220</h1><span class="live">● онлайн</span>
+    <div class="sw"><button class="on"><i>🚀</i>Auto-Best</button><button><i>🛡️</i>Fallback</button><button><i>⚙️</i>Manual</button></div></div>
+  <div class="chart"><h2>Трафик за сутки <b>4,2 ГБ</b></h2>
+    <svg viewBox="0 0 600 190" preserveAspectRatio="none">
+      <defs><linearGradient id="a" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#f59e0b" stop-opacity=".45"/><stop offset="1" stop-color="#f59e0b" stop-opacity="0"/></linearGradient></defs>
+      <path d="M0 160 L40 150 L80 155 L120 130 L160 140 L200 100 L240 115 L280 70 L320 90 L360 60 L400 85 L440 40 L480 65 L520 50 L560 80 L600 70 L600 190 L0 190 Z" fill="url(#a)"/>
+      <path d="M0 160 L40 150 L80 155 L120 130 L160 140 L200 100 L240 115 L280 70 L320 90 L360 60 L400 85 L440 40 L480 65 L520 50 L560 80 L600 70" fill="none" stroke="#f59e0b" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+    </svg></div>
+  <div class="kpi"><div class="k"><span>Пинг</span><b>53 мс</b></div><div class="k"><span>Подписка</span><b>24 дня</b></div><div class="k"><span>Израсходовано</span><b>28 ГБ</b></div><div class="k"><span>Устройств</span><b>7</b></div></div>
+</main>
+</body></html>

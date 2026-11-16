@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · Карусель карточек</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: #111827; color: #f9fafb; font: 15px/1.5 system-ui, sans-serif; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+.brand { text-align: center; font-weight: 800; font-size: 20px; margin-bottom: 18px; } .brand b { color: #f472b6; }
+.track { display: flex; gap: 22px; padding: 10px calc(50% - 170px); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.c { flex: none; width: 340px; height: 440px; scroll-snap-align: center; border-radius: 32px; padding: 26px; display: flex; flex-direction: column; transform: scale(.9); opacity: .55; }
+.c.cur { transform: scale(1); opacity: 1; box-shadow: 0 30px 60px #0007; }
+.c1 { background: linear-gradient(160deg, #10b981, #047857); }
+.c2 { background: linear-gradient(160deg, #f472b6, #9d174d); }
+.c3 { background: linear-gradient(160deg, #60a5fa, #1d4ed8); }
+.c4 { background: linear-gradient(160deg, #fbbf24, #b45309); color: #1f1300; }
+.c .k { font-size: 13px; text-transform: uppercase; letter-spacing: .1em; opacity: .85; }
+.c h2 { font-size: 34px; margin: 8px 0; line-height: 1.05; }
+.c .fill { flex: 1; display: grid; place-items: center; font-size: 90px; }
+.opts { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
+.opts b { padding: 13px 16px; border-radius: 16px; background: #ffffff26; display: flex; justify-content: space-between; }
+.opts b.on { background: #fff; color: #9d174d; }
+.ic { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: auto; }
+.ic span { aspect-ratio: 1; border-radius: 18px; background: #ffffff26; display: grid; place-items: center; font-size: 30px; } .ic span.off { opacity: .4; }
+.dots { display: flex; justify-content: center; gap: 8px; margin-top: 20px; } .dots i { width: 8px; height: 8px; border-radius: 99px; background: #374151; } .dots i.on { width: 26px; background: #f472b6; }
+.arrows { text-align: center; color: #9ca3af; font-size: 13px; margin-top: 10px; }
+</style></head><body>
+<div class="brand">Keen<b>Way</b></div>
+<div class="track">
+  <div class="c c1"><span class="k">Статус</span><h2>Защищено</h2><div class="fill">🛡️</div><span>🇸🇪 Швеция 287220 · 53 мс</span></div>
+  <div class="c c2 cur"><span class="k">Режим</span><h2>Как выбирать сервер</h2>
+    <div class="opts"><b class="on">🚀 Auto-Best <span>✓</span></b><b>🛡️ Fallback</b><b>⚙️ Manual</b></div></div>
+  <div class="c c3"><span class="k">Сервисы</span><h2>Через VPN</h2><div class="ic"><span>▶️</span><span>💬</span><span>📷</span><span>✈️</span><span class="off">🏦</span><span class="off">🎮</span></div></div>
+  <div class="c c4"><span class="k">Подписка</span><h2>24 дня</h2><div class="fill">📅</div><span>28 из 3221 ГБ</span></div>
+</div>
+<div class="dots"><i></i><i class="on"></i><i></i><i></i></div>
+<div class="arrows">← листайте карточки →</div>
+</body></html>

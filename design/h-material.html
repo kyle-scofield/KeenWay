@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · H · Material You</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: flex; font: 15px/1.5 system-ui, sans-serif; }
+nav { width: 220px; flex: none; padding: 22px 14px; display: flex; flex-direction: column; gap: 3px; }
+.brand { font-weight: 800; font-size: 21px; padding: 0 10px 18px; }
+nav a { padding: 9px 12px; cursor: pointer; }
+main { flex: 1; min-width: 0; padding: 28px 32px; }
+h1 { margin: 0 0 20px; font-size: 26px; }
+.hero { display: grid; grid-template-columns: 200px 1fr; gap: 28px; align-items: center; padding: 24px; }
+.ring { width: 180px; height: 180px; border-radius: 50%; display: grid; place-items: center; text-align: center; }
+.ring b { display: block; font-size: 19px; } .ring small { display: block; font-size: 13px; opacity: .85; }
+.k { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; opacity: .7; }
+.big { font-size: 22px; font-weight: 700; margin: 2px 0 12px; }
+.big2 { font-size: 18px; font-weight: 700; margin: 2px 0 10px; }
+.modes { display: inline-flex; gap: 4px; padding: 4px; margin: 0 0 16px; }
+.modes button { font: inherit; font-size: 14px; border: 0; padding: 7px 14px; cursor: pointer; background: transparent; color: inherit; }
+.bar { height: 8px; overflow: hidden; } .bar i { display: block; height: 100%; width: 9%; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 20px; }
+.tile { padding: 15px; } .tile .ic { font-size: 20px; } .tile b { display: block; margin: 6px 0 1px; } .tile em { font-style: normal; font-size: 12px; font-weight: 600; }
+@media (max-width: 760px) { body { flex-direction: column; } nav { width: 100%; flex-direction: row; overflow-x: auto; } .hero { grid-template-columns: 1fr; justify-items: center; } }
+
+body { color: #1d1b20; background: #fef7ff; font-family: Roboto, system-ui, sans-serif; }
+nav { background: #f3edf7; } .brand b { color: #6750a4; }
+nav a { border-radius: 99px; color: #49454f; padding: 12px 18px; } nav a.on { background: #e8def8; color: #1d1b20; font-weight: 600; }
+h1 { font-weight: 400; font-size: 32px; }
+.hero { background: #f3edf7; border-radius: 28px; }
+.ring { background: #6750a4; color: #fff; box-shadow: 0 0 0 12px #e8def8; }
+.modes { background: #e8def8; border-radius: 99px; } .modes button { border-radius: 99px; color: #49454f; } .modes .on { background: #6750a4; color: #fff; }
+.bar { background: #e8def8; border-radius: 99px; } .bar i { background: #6750a4; border-radius: 99px; }
+.tile { background: #f7f2fa; border-radius: 20px; border: 1px solid #e7e0ec; } .tile em { color: #6750a4; } .tile.off em { color: #79747e; }
+</style>
+</head>
+<body>
+<nav>
+  <div class="brand">Keen<b>Way</b></div>
+  <a class="on">Обзор</a><a>Подключение</a><a>Сервисы</a><a>Свои сайты</a><a>Устройства</a><a>Серверы</a><a>Трафик</a><a>Настройки</a>
+</nav>
+<main>
+  <h1>Обзор</h1>
+  <section class="hero">
+    <div class="ring"><div><b>Защищено</b><small>53 мс</small></div></div>
+    <div class="info">
+      <div class="k">Сервер сейчас</div>
+      <div class="big">🇸🇪 Швеция 287220</div>
+      <div class="modes"><button class="on">🚀 Auto-Best</button><button>🛡️ Fallback</button><button>⚙️ Manual</button></div>
+      <div class="k">Подписка VPNN</div>
+      <div class="big2">24 дня · 28 из 3221 ГБ</div>
+      <div class="bar"><i></i></div>
+    </div>
+  </section>
+  <section class="tiles">
+    <div class="tile"><span class="ic">▶️</span><b>YouTube</b><em>через VPN</em></div>
+    <div class="tile"><span class="ic">💬</span><b>Discord</b><em>через VPN</em></div>
+    <div class="tile"><span class="ic">📷</span><b>Instagram</b><em>через VPN</em></div>
+    <div class="tile"><span class="ic">✈️</span><b>Telegram</b><em>через VPN</em></div>
+    <div class="tile off"><span class="ic">🏦</span><b>Банки</b><em>напрямую</em></div>
+    <div class="tile off"><span class="ic">🎮</span><b>Игры</b><em>напрямую</em></div>
+  </section>
+</main>
+</body>
+</html>

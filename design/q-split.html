@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · Q · Разделённый экран</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: grid; grid-template-columns: 42% 1fr; font: 15px/1.5 system-ui, sans-serif; color: #10231a; }
+.left { background: linear-gradient(160deg, #16a34a, #0f766e); color: #fff; padding: 40px; display: flex; flex-direction: column; }
+.brand { font-weight: 800; font-size: 22px; } .brand b { opacity: .7; }
+.huge { margin: auto 0; }
+.huge .icon { width: 84px; height: 84px; border-radius: 24px; background: #ffffff26; display: grid; place-items: center; font-size: 44px; }
+.huge h1 { font-size: 54px; line-height: 1.02; margin: 22px 0 10px; letter-spacing: -.03em; }
+.huge p { font-size: 18px; opacity: .9; margin: 0; }
+.left small { opacity: .8; }
+.right { background: #f7faf8; padding: 40px 44px; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .1em; color: #5f7a6d; margin: 0 0 12px; }
+.radios { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; }
+.radio { display: flex; gap: 14px; align-items: center; padding: 14px 16px; border-radius: 14px; background: #fff; border: 1px solid #dfe9e3; cursor: pointer; }
+.radio .dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #b5c8bd; flex: none; }
+.radio.on { background: #0f766e; color: #fff; border-color: #0f766e; }
+.radio.on .dot { border: 6px solid #fff; }
+.radio b { display: block; } .radio span { font-size: 13px; opacity: .75; }
+.list { background: #fff; border: 1px solid #dfe9e3; border-radius: 14px; }
+.it { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #edf3ef; }
+.it:first-child { border-top: 0; } .it .t { flex: 1; font-weight: 600; }
+.tag { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 99px; background: #dcfce7; color: #166534; }
+.tag.d { background: #eef2f0; color: #5f7a6d; }
+.menu { display: flex; gap: 18px; margin-top: 30px; color: #5f7a6d; font-weight: 600; flex-wrap: wrap; }
+@media (max-width: 760px) { body { grid-template-columns: 1fr; } .huge h1 { font-size: 40px; } .left { padding: 28px 20px; } .right { padding: 24px 16px; } }
+</style></head><body>
+<section class="left">
+  <div class="brand">Keen<b>Way</b></div>
+  <div class="huge"><div class="icon">✓</div><h1>Всё<br>открывается</h1><p>🇸🇪 Швеция 287220 · 53 мс</p></div>
+  <small>Подписка VPNN: 24 дня · 28 из 3221 ГБ</small>
+</section>
+<section class="right">
+  <h2>Режим</h2>
+  <div class="radios">
+    <div class="radio on"><span class="dot"></span><div><b>🚀 Auto-Best</b><span>Самый быстрый сервер автоматически</span></div></div>
+    <div class="radio"><span class="dot"></span><div><b>🛡️ Fallback</b><span>Один сервер, запасной при обрыве</span></div></div>
+    <div class="radio"><span class="dot"></span><div><b>⚙️ Manual</b><span>Выбираю сам</span></div></div>
+  </div>
+  <h2>Сервисы</h2>
+  <div class="list">
+    <div class="it">▶️<span class="t">YouTube</span><span class="tag">VPN</span></div>
+    <div class="it">💬<span class="t">Discord</span><span class="tag">VPN</span></div>
+    <div class="it">📷<span class="t">Instagram</span><span class="tag">VPN</span></div>
+    <div class="it">✈️<span class="t">Telegram</span><span class="tag">VPN</span></div>
+    <div class="it">🏦<span class="t">Банки</span><span class="tag d">напрямую</span></div>
+  </div>
+  <div class="menu"><span>Устройства</span><span>Серверы</span><span>Сайты</span><span>Трафик</span><span>Настройки</span></div>
+</section>
+</body></html>

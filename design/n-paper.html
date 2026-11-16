@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · N · Бумага</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: flex; font: 15px/1.5 system-ui, sans-serif; }
+nav { width: 220px; flex: none; padding: 22px 14px; display: flex; flex-direction: column; gap: 3px; }
+.brand { font-weight: 800; font-size: 21px; padding: 0 10px 18px; }
+nav a { padding: 9px 12px; cursor: pointer; }
+main { flex: 1; min-width: 0; padding: 28px 32px; }
+h1 { margin: 0 0 20px; font-size: 26px; }
+.hero { display: grid; grid-template-columns: 200px 1fr; gap: 28px; align-items: center; padding: 24px; }
+.ring { width: 180px; height: 180px; border-radius: 50%; display: grid; place-items: center; text-align: center; }
+.ring b { display: block; font-size: 19px; } .ring small { display: block; font-size: 13px; opacity: .85; }
+.k { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; opacity: .7; }
+.big { font-size: 22px; font-weight: 700; margin: 2px 0 12px; }
+.big2 { font-size: 18px; font-weight: 700; margin: 2px 0 10px; }
+.modes { display: inline-flex; gap: 4px; padding: 4px; margin: 0 0 16px; }
+.modes button { font: inherit; font-size: 14px; border: 0; padding: 7px 14px; cursor: pointer; background: transparent; color: inherit; }
+.bar { height: 8px; overflow: hidden; } .bar i { display: block; height: 100%; width: 9%; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 20px; }
+.tile { padding: 15px; } .tile .ic { font-size: 20px; } .tile b { display: block; margin: 6px 0 1px; } .tile em { font-style: normal; font-size: 12px; font-weight: 600; }
+@media (max-width: 760px) { body { flex-direction: column; } nav { width: 100%; flex-direction: row; overflow-x: auto; } .hero { grid-template-columns: 1fr; justify-items: center; } }
+
+body { color: #2b2620; background: #f5f0e6; font-family: Georgia, "Times New Roman", serif; }
+nav { background: #ece5d6; border-right: 1px solid #ddd3bf; font-family: system-ui, sans-serif; } .brand { font-family: Georgia, serif; } .brand b { color: #b4532a; font-style: italic; }
+nav a { border-radius: 6px; color: #6b6153; } nav a.on { background: #f5f0e6; color: #2b2620; font-weight: 600; }
+h1 { font-size: 36px; font-weight: 400; }
+.hero { background: #fffdf8; border: 1px solid #e3d9c5; border-radius: 6px; box-shadow: 0 1px 0 #e3d9c5; }
+.ring { background: #fffdf8; border: 2px solid #2b2620; color: #2e7d32; font-style: italic; }
+.k { font-family: system-ui, sans-serif; }
+.modes { border: 1px solid #ddd3bf; border-radius: 8px; background: #f5f0e6; font-family: system-ui, sans-serif; } .modes button { border-radius: 6px; color: #6b6153; } .modes .on { background: #2b2620; color: #f5f0e6; }
+.bar { background: #ece5d6; height: 6px; } .bar i { background: #b4532a; }
+.tile { background: #fffdf8; border: 1px solid #e3d9c5; border-radius: 6px; } .tile em { color: #2e7d32; font-family: system-ui, sans-serif; } .tile.off em { color: #8c8274; }
+</style>
+</head>
+<body>
+<nav>
+  <div class="brand">Keen<b>Way</b></div>
+  <a class="on">Обзор</a><a>Подключение</a><a>Сервисы</a><a>Свои сайты</a><a>Устройства</a><a>Серверы</a><a>Трафик</a><a>Настройки</a>
+</nav>
+<main>
+  <h1>Обзор</h1>
+  <section class="hero">
+    <div class="ring"><div><b>Защищено</b><small>53 мс</small></div></div>
+    <div class="info">
+      <div class="k">Сервер сейчас</div>
+      <div class="big">🇸🇪 Швеция 287220</div>
+      <div class="modes"><button class="on">🚀 Auto-Best</button><button>🛡️ Fallback</button><button>⚙️ Manual</button></div>
+      <div class="k">Подписка VPNN</div>
+      <div class="big2">24 дня · 28 из 3221 ГБ</div>
+      <div class="bar"><i></i></div>
+    </div>
+  </section>
+  <section class="tiles">
+    <div class="tile"><span class="ic">▶️</span><b>YouTube</b><em>через VPN</em></div>
+    <div class="tile"><span class="ic">💬</span><b>Discord</b><em>через VPN</em></div>
+    <div class="tile"><span class="ic">📷</span><b>Instagram</b><em>через VPN</em></div>
+    <div class="tile"><span class="ic">✈️</span><b>Telegram</b><em>через VPN</em></div>
+    <div class="tile off"><span class="ic">🏦</span><b>Банки</b><em>напрямую</em></div>
+    <div class="tile off"><span class="ic">🎮</span><b>Игры</b><em>напрямую</em></div>
+  </section>
+</main>
+</body>
+</html>

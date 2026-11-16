@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · 10 · Роутер на связи</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: #050505; display: grid; place-items: center; padding: 20px; font: 15px/1.4 system-ui, sans-serif; color: #fff; }
+.phone { width: 380px; max-width: 100%; height: 720px; max-height: calc(100vh - 40px); border-radius: 40px; padding: 60px 26px 40px; display: flex; flex-direction: column; align-items: center; text-align: center;
+  background: linear-gradient(180deg, #134e4a, #042f2e 55%, #021c1b); }
+.label { font-size: 14px; opacity: .8; }
+.ava { width: 120px; height: 120px; border-radius: 50%; margin: 22px 0 14px; background: radial-gradient(circle at 35% 30%, #5eead4, #0f766e); display: grid; place-items: center; font-size: 56px; box-shadow: 0 0 0 10px #14b8a622, 0 0 0 22px #14b8a611; }
+h1 { margin: 0; font-size: 30px; font-weight: 600; }
+.time { margin-top: 6px; font-size: 16px; color: #5eead4; font-variant-numeric: tabular-nums; }
+.sub { margin-top: 18px; padding: 12px 16px; border-radius: 16px; background: #ffffff12; font-size: 15px; }
+.grid { margin-top: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px 14px; width: 100%; }
+.k { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; opacity: .9; cursor: pointer; }
+.k i { width: 66px; height: 66px; border-radius: 50%; background: #ffffff1f; display: grid; place-items: center; font-style: normal; font-size: 26px; }
+.k.on i { background: #fff; color: #042f2e; }
+.end { margin-top: 26px; width: 70px; height: 70px; border-radius: 50%; background: #ef4444; display: grid; place-items: center; font-size: 28px; }
+.end + small { margin-top: 6px; font-size: 12px; opacity: .7; }
+</style></head><body>
+<div class="phone">
+  <div class="label">KeenWay · на связи</div>
+  <div class="ava">📶</div>
+  <h1>Роутер</h1>
+  <div class="time">🇸🇪 Швеция · 53 мс · 9:43:12</div>
+  <div class="sub">«Всё в порядке, YouTube и Discord работают. Подписки хватит на 24 дня.»</div>
+  <div class="grid">
+    <div class="k on"><i>🚀</i>Auto-Best</div><div class="k"><i>🛡️</i>Fallback</div><div class="k"><i>⚙️</i>Manual</div>
+    <div class="k"><i>⚡</i>Пинг всех</div><div class="k"><i>📱</i>Устройства</div><div class="k"><i>🔑</i>Ключ</div>
+  </div>
+  <div class="end">⏸</div><small>Пауза VPN</small>
+</div>
+</body></html>

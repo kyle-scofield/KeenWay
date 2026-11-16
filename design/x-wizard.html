@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · X · Пошаговый мастер</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: #eef2ff; color: #1e1b4b; font: 16px/1.5 system-ui, sans-serif; display: grid; place-items: center; padding: 30px 16px; }
+.card { width: 720px; max-width: 100%; background: #fff; border-radius: 28px; padding: 34px; box-shadow: 0 30px 70px #4338ca22; }
+.brand { font-weight: 800; color: #4338ca; }
+.steps { display: flex; align-items: center; margin: 22px 0 30px; }
+.st { display: flex; align-items: center; gap: 8px; font-weight: 600; color: #a5a3c9; font-size: 14px; }
+.st i { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-style: normal; background: #e0e7ff; color: #6366f1; }
+.st.done i { background: #22c55e; color: #fff; } .st.done { color: #1e1b4b; }
+.st.now i { background: #4338ca; color: #fff; box-shadow: 0 0 0 5px #c7d2fe; } .st.now { color: #1e1b4b; }
+.ln { flex: 1; height: 2px; background: #e0e7ff; margin: 0 10px; } .ln.done { background: #22c55e; }
+h1 { margin: 0 0 6px; font-size: 28px; } p.sub { margin: 0 0 22px; color: #6b6894; }
+.opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.o { border: 2px solid #e0e7ff; border-radius: 20px; padding: 20px 16px; text-align: center; cursor: pointer; }
+.o i { font-style: normal; font-size: 40px; } .o b { display: block; margin: 8px 0 4px; } .o span { font-size: 13px; color: #6b6894; }
+.o.on { border-color: #4338ca; background: #4338ca; color: #fff; transform: translateY(-4px); box-shadow: 0 14px 30px #4338ca55; }
+.o.on span { color: #c7d2fe; }
+.rec { display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; background: #fbbf24; color: #422006; border-radius: 99px; padding: 2px 8px; }
+.nav { display: flex; justify-content: space-between; margin-top: 30px; }
+.btn { font: inherit; font-weight: 700; border: 0; border-radius: 14px; padding: 14px 26px; cursor: pointer; }
+.btn.back { background: #eef2ff; color: #4338ca; } .btn.next { background: #4338ca; color: #fff; box-shadow: 0 8px 20px #4338ca55; }
+@media (max-width: 760px) { .opts { grid-template-columns: 1fr; } .st span { display: none; } }
+</style></head><body>
+<div class="card">
+  <div class="brand">KeenWay · первая настройка</div>
+  <div class="steps">
+    <div class="st done"><i>✓</i><span>Ключ</span></div><div class="ln done"></div>
+    <div class="st now"><i>2</i><span>Режим</span></div><div class="ln"></div>
+    <div class="st"><i>3</i><span>Сервисы</span></div><div class="ln"></div>
+    <div class="st"><i>4</i><span>Готово</span></div>
+  </div>
+  <h1>Как выбирать сервер?</h1>
+  <p class="sub">Подписка VPNN подключена: 92 сервера, 24 дня. Выберите, как роутеру с ними работать.</p>
+  <div class="opts">
+    <div class="o on"><i>🚀</i><b>Auto-Best</b><span>Сам берёт самый быстрый</span><div class="rec">советуем</div></div>
+    <div class="o"><i>🛡️</i><b>Fallback</b><span>Один сервер + запасной</span></div>
+    <div class="o"><i>⚙️</i><b>Manual</b><span>Выбираю сам</span></div>
+  </div>
+  <div class="nav"><button class="btn back">← Назад</button><button class="btn next">Дальше →</button></div>
+</div>
+</body></html>

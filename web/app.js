@@ -51,6 +51,33 @@ function seg(options, value, onchange) {
   return wrap;
 }
 
+// ---------- map scripts (loaded on demand) ----------
+const loadScript = (src) => new Promise((ok, fail) => { const e = h('script', { src }); e.onload = ok; e.onerror = () => fail(new Error(`не загрузился ${src}`)); document.head.append(e); });
+let mapReady = null;
+const ensureMap = () => (mapReady ||= (async () => { await loadScript('vendor/d3.min.js'); await loadScript('vendor/topojson-client.min.js'); await loadScript('map.js'); })());
+
+// ---------- themes ----------
+const THEMES = [
+  ['neon', 'Неон', ['#07080d', '#7c3aed', '#0891b2']],
+  ['light', 'Светлый минимализм', ['#f5f5f8', '#ffffff', '#0a84ff']],
+  ['dark', 'Чёрный минимализм', ['#000000', '#1c1c1e', '#0a84ff']],
+  ['terminal', 'Терминал', ['#0a0f0a', '#11201a', '#4ade80']],
+];
+const currentTheme = () => document.documentElement.dataset.theme || 'neon';
+function setTheme(t) {
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem('kw-theme', t); } catch { /* storage blocked: theme lasts until reload */ }
+}
+function themePicker() {
+  const box = h('div', { class: 'themes' });
+  const draw = () => box.replaceChildren(...THEMES.map(([id, name, [bg, a, b]]) => h('button', {
+    class: `theme-opt ${currentTheme() === id ? 'on' : ''}`, onclick: () => { setTheme(id); draw(); toast(`Тема: ${name}`); },
+  }, h('div', { class: 'sw', style: `background:${bg}` }, h('i', { style: `background:${a}` }), h('i', { style: `background:${b}` })), h('b', {}, name))));
+  draw();
+  return h('div', { class: 'card stack' }, h('h2', { style: 'margin-top:0' }, 'Оформление'),
+    h('p', { class: 'muted small' }, 'Тема запоминается на этом устройстве. Карту серверов включайте на странице «Серверы».'), box);
+}
+
 // ---------- state ----------
 const S = { state: null, status: null, devices: null, ui: { templateUpdater: null }, page: 'overview', timers: [] };
 
@@ -698,8 +725,36 @@ pages.servers = async function () {
   };
 
   const modes = vpn ? vpn.options.filter((o) => byName[o]) : [];
+  let view = 'list';
+  try { view = localStorage.getItem('kw-servers-view') || 'list'; } catch { /* storage blocked */ }
+  const viewSeg = seg([['list', '📋 Список'], ['map', '🗺 Карта']], view, (v) => { try { localStorage.setItem('kw-servers-view', v); } catch { /* ignore */ } go('servers'); });
+  if (view === 'map') {
+    const mapBox = h('div', { class: 'map-wrap' }, h('div', { class: 'empty' }, h('span', { class: 'spinner' })));
+    const drawMap = async () => {
+      try {
+        await ensureMap();
+        await window.KWMap.render(mapBox, { nodes, delays, current, isExcluded, onPick: pick });
+      } catch (e) { mapBox.replaceChildren(h('div', { class: 'alert bad' }, '⛔ Карта не открылась: ', e.message)); }
+    };
+    const mapTest = h('button', { class: 'btn', onclick: async () => {
+      if (!pool) return;
+      mapTest.disabled = true; mapTest.replaceChildren(h('span', { class: 'spinner sm' }), ' Пинг…');
+      try { const res = await api('POST', '/test', { group: pool.name }); for (const n of nodes) delays[n] = res[n] || 0; } catch (e) { toast(e.message); }
+      mapTest.disabled = false; mapTest.replaceChildren('⚡ Пинг всех');
+      drawMap();
+    } }, '⚡ Пинг всех');
+    mount(
+      h('div', { class: 'row between' }, h('h1', {}, 'Серверы'), h('div', { class: 'row' }, viewSeg, mapTest)),
+      vpn && modes.length > 1 && h('div', { class: 'row' }, h('span', { class: 'small muted' }, 'Режим:'),
+        seg(modes.map((m) => [m, m]), vpn.now, async (m) => { try { await choose('VPN', m); toast(`VPN → ${m}`); go('servers'); } catch (e) { toast(e.message); } })),
+      mapBox,
+    );
+    await drawMap();
+    mapTest.click(); // fresh pings, then the map redraws with colours
+    return;
+  }
   mount(
-    h('div', { class: 'row between' }, h('h1', {}, 'Серверы'), testBtn),
+    h('div', { class: 'row between' }, h('h1', {}, 'Серверы'), h('div', { class: 'row' }, viewSeg, testBtn)),
     vpn && h('div', { class: 'card stack' },
       h('div', { class: 'muted small' }, 'VPN сейчас идёт через'),
       h('div', { style: 'font-weight:700;font-size:1.1rem' }, chain.join(' → ')),
@@ -964,6 +1019,7 @@ pages.settings = async function () {
   const secretOut = h('span', { class: 'mono' });
   mount(
     h('h1', {}, 'Настройки'),
+    themePicker(),
     st.panel
       ? h('div', { class: 'card stack' }, h('h2', { style: 'margin-top:0' }, 'Веб-панель роутера'),
           h('p', { class: 'muted small' }, 'KeenWay работает прямо на роутере и открывается с любого устройства в домашней сети. Сменить пароль: keenway panel password, выключить панель: keenway panel off (в терминале роутера).'),

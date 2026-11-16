@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · вариант D · Терминал</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: flex; background: #0a0f0a; color: #b6f5c6; font: 14px/1.6 ui-monospace, "JetBrains Mono", Consolas, monospace; }
+nav { width: 220px; flex: none; padding: 20px 14px; border-right: 1px dashed #1f3a26; display: flex; flex-direction: column; gap: 2px; }
+.brand { color: #4ade80; font-weight: 700; padding: 0 8px 18px; }
+nav a { padding: 6px 8px; color: #6ea57d; }
+nav a.on { color: #0a0f0a; background: #4ade80; }
+main { flex: 1; padding: 26px 30px; }
+h1 { font-size: 17px; color: #4ade80; margin: 0 0 18px; font-weight: 600; }
+.box { border: 1px solid #1f3a26; padding: 14px 16px; margin-bottom: 14px; background: #0c140d; }
+.box h3 { margin: 0 0 10px; font-size: 13px; color: #6ea57d; font-weight: 400; }
+.r { display: flex; justify-content: space-between; gap: 10px; }
+.ok { color: #4ade80; } .dim { color: #4b7a58; }
+.cur::after { content: '█'; animation: b 1s steps(1) infinite; }
+@keyframes b { 50% { opacity: 0; } }
+@media (max-width: 760px) { body { flex-direction: column; } nav { width: 100%; flex-direction: row; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<nav>
+  <div class="brand">&gt; keenway</div>
+  <a class="on">▸ обзор</a><a>подключение</a><a>сервисы</a><a>сайты</a><a>устройства</a><a>серверы</a><a>трафик</a><a>настройки</a>
+</nav>
+<main>
+  <h1>$ keenway status</h1>
+  <div class="box"><h3># ядро</h3>
+    <div class="r"><span>mihomo</span><span class="ok">v1.19.30 [работает]</span></div>
+    <div class="r"><span>режим</span><span>auto-best</span></div>
+    <div class="r"><span>сервер</span><span class="ok">SE-287220 · 53ms</span></div>
+  </div>
+  <div class="box"><h3># подписка VPNN</h3>
+    <div class="r"><span>трафик</span><span>28.4 / 3221 GB [█░░░░░░░░░]</span></div>
+    <div class="r"><span>срок</span><span>24d → 10.12.2026</span></div>
+    <div class="r"><span>серверы</span><span class="ok">73/92 alive</span></div>
+  </div>
+  <div class="box"><h3># маршруты</h3>
+    <div class="r"><span>youtube discord instagram telegram</span><span class="ok">→ proxy</span></div>
+    <div class="r"><span>banks gosuslugi ru-sites</span><span class="dim">→ direct</span></div>
+  </div>
+  <div class="dim">$ <span class="cur"></span></div>
+</main>
+</body>
+</html>

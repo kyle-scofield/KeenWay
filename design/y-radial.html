@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · Y · Круговое меню</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(circle at 50% 50%, #1e1b4b, #09090f 70%); color: #eef; font: 15px/1.4 system-ui, sans-serif; overflow: hidden; }
+.brand { position: fixed; top: 20px; left: 24px; font-weight: 800; font-size: 20px; } .brand b { color: #a78bfa; }
+.sub { position: fixed; top: 22px; right: 24px; color: #a5a3c9; font-size: 14px; }
+.wheel { position: relative; width: 600px; height: 600px; }
+.orbit { position: absolute; inset: 0; border-radius: 50%; border: 1px dashed #4c4a7a; }
+.orbit.in { inset: 120px; border-style: solid; border-color: #2e2b55; }
+.core { position: absolute; inset: 200px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #a78bfa, #6d28d9 70%); display: grid; place-items: center; text-align: center; box-shadow: 0 0 80px #7c3aed99; }
+.core b { display: block; font-size: 22px; } .core span { font-size: 13px; opacity: .9; }
+.m, .s { position: absolute; transform: translate(-50%, -50%); text-align: center; cursor: pointer; }
+.m { width: 104px; height: 104px; border-radius: 50%; display: grid; place-items: center; background: #1a1838; border: 2px solid #3b3870; font-weight: 700; font-size: 13px; }
+.m i { display: block; font-style: normal; font-size: 26px; }
+.m.on { background: #f5f3ff; color: #4c1d95; border-color: #f5f3ff; box-shadow: 0 0 30px #a78bfa; }
+.s { width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center; background: #12112a; border: 2px solid #34d399; font-size: 24px; }
+.s.off { border-color: #3b3870; opacity: .55; }
+.s small { position: absolute; top: 66px; width: 90px; left: -14px; font-size: 11px; color: #a5a3c9; }
+@media (max-width: 640px) { .wheel { transform: scale(.58); } }
+</style></head><body>
+<div class="brand">Keen<b>Way</b></div><div class="sub">🇸🇪 Швеция 287220 · 24 дня</div>
+<div class="wheel">
+  <div class="orbit"></div><div class="orbit in"></div>
+  <div class="core"><div><b>Защищено</b><span>53 мс</span></div></div>
+  <div class="m on" style="left:50%;top:20%"><div><i>🚀</i>Auto-Best</div></div>
+  <div class="m" style="left:76%;top:65%"><div><i>🛡️</i>Fallback</div></div>
+  <div class="m" style="left:24%;top:65%"><div><i>⚙️</i>Manual</div></div>
+  <div class="s" style="left:50%;top:0%">▶️<small>YouTube</small></div>
+  <div class="s" style="left:93%;top:25%">💬<small>Discord</small></div>
+  <div class="s" style="left:93%;top:75%">📷<small>Instagram</small></div>
+  <div class="s" style="left:50%;top:100%">✈️<small>Telegram</small></div>
+  <div class="s off" style="left:7%;top:75%">🏦<small>Банки</small></div>
+  <div class="s off" style="left:7%;top:25%">🎮<small>Игры</small></div>
+</div>
+</body></html>

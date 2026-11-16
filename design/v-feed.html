@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · V · Лента событий</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: #fafaf9; color: #1c1917; font: 15px/1.5 system-ui, sans-serif; }
+.wrap { max-width: 640px; margin: 0 auto; padding: 30px 18px; }
+.head { display: flex; align-items: center; gap: 14px; }
+.logo { width: 52px; height: 52px; border-radius: 16px; background: #1c1917; color: #fafaf9; display: grid; place-items: center; font-weight: 800; font-size: 22px; }
+.head h1 { margin: 0; font-size: 22px; } .head p { margin: 0; color: #78716c; }
+.icons { display: flex; gap: 8px; margin: 22px 0; }
+.ib { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 6px; border-radius: 16px; border: 1px solid #e7e5e4; background: #fff; font-size: 13px; color: #57534e; cursor: pointer; }
+.ib i { font-style: normal; font-size: 26px; }
+.ib.on { background: #1c1917; color: #fff; border-color: #1c1917; }
+.feed { position: relative; padding-left: 26px; }
+.feed::before { content: ''; position: absolute; left: 8px; top: 6px; bottom: 6px; width: 2px; background: #e7e5e4; }
+.ev { position: relative; background: #fff; border: 1px solid #e7e5e4; border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
+.ev::before { content: ''; position: absolute; left: -24px; top: 16px; width: 12px; height: 12px; border-radius: 50%; background: #a8a29e; border: 3px solid #fafaf9; }
+.ev.g::before { background: #16a34a; } .ev.b::before { background: #2563eb; } .ev.y::before { background: #d97706; }
+.ev b { display: block; } .ev span { color: #78716c; font-size: 13px; }
+.ev time { float: right; color: #a8a29e; font-size: 12px; }
+.more { text-align: center; color: #78716c; font-weight: 600; margin-top: 6px; }
+</style></head><body>
+<div class="wrap">
+  <div class="head"><div class="logo">K</div><div><h1>Всё работает</h1><p>🇸🇪 Швеция 287220 · 53 мс · 24 дня подписки</p></div></div>
+  <div class="icons"><div class="ib on"><i>🚀</i>Auto-Best</div><div class="ib"><i>🛡️</i>Fallback</div><div class="ib"><i>⚙️</i>Manual</div><div class="ib"><i>⚡</i>Пинг</div></div>
+  <div class="feed">
+    <div class="ev g"><time>00:31</time><b>VPN снова работает</b><span>Режим Auto-Best выбрал 🇸🇪 Швецию, 53 мс</span></div>
+    <div class="ev y"><time>00:25</time><b>Сайты не открывались</b><span>Был выбран сервер 🇷🇺 LTE — через него блокировки не обходятся</span></div>
+    <div class="ev b"><time>00:20</time><b>Роутер перезагрузился</b><span>mihomo запущен, режим Hybrid</span></div>
+    <div class="ev"><time>вчера</time><b>Подписка обновлена</b><span>VPNN: 92 сервера, 73 живых</span></div>
+    <div class="ev"><time>вчера</time><b>Новое устройство</b><span>iPhone 192.168.1.57 получил правило «через VPN»</span></div>
+  </div>
+  <div class="more">Показать ещё</div>
+</div>
+</body></html>

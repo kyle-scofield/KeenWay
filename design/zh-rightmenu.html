@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · Меню справа и строка статуса снизу</title>
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { display: grid; grid-template-columns: 170px 1fr 220px; grid-template-rows: 1fr 46px; background: #f1f5f4; color: #11211d; font: 15px/1.5 system-ui, sans-serif; }
+.modes { grid-row: 1; grid-column: 1; padding: 22px 12px; display: flex; flex-direction: column; gap: 10px; background: #e3ece9; }
+.modes .h { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #5d7570; margin: 0 6px 4px; }
+.modes button { font: inherit; text-align: left; border: 0; border-radius: 14px; padding: 14px 12px; background: #fff; cursor: pointer; display: flex; flex-direction: column; gap: 2px; color: #11211d; }
+.modes button i { font-style: normal; font-size: 24px; }
+.modes button small { color: #5d7570; font-size: 12px; }
+.modes button.on { background: #0f766e; color: #fff; box-shadow: 0 8px 20px #0f766e55; } .modes button.on small { color: #ccfbf1; }
+main { grid-row: 1; grid-column: 2; padding: 30px 34px; overflow: auto; }
+main h1 { margin: 0 0 4px; font-size: 30px; } main p.s { margin: 0 0 22px; color: #5d7570; }
+.hero { display: flex; align-items: center; gap: 22px; background: #fff; border-radius: 22px; padding: 22px; }
+.hero .f { font-size: 64px; } .hero b { display: block; font-size: 24px; } .hero span { color: #0f766e; font-weight: 700; }
+.svc { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+.svc div { background: #fff; border-radius: 16px; padding: 16px; font-weight: 600; } .svc div em { display: block; font-style: normal; font-size: 12px; color: #0f766e; } .svc div.off em { color: #8aa29c; }
+nav { grid-row: 1; grid-column: 3; background: #11211d; color: #c9dcd7; padding: 22px 14px; display: flex; flex-direction: column; gap: 4px; }
+nav .brand { color: #fff; font-weight: 800; font-size: 20px; text-align: right; padding: 0 8px 18px; } nav .brand b { color: #2dd4bf; }
+nav a { padding: 9px 12px; border-radius: 10px; text-align: right; } nav a.on { background: #2dd4bf; color: #11211d; font-weight: 700; }
+.status { grid-column: 1 / -1; display: flex; align-items: center; gap: 22px; padding: 0 20px; background: #0f766e; color: #ecfdf5; font-size: 13px; white-space: nowrap; overflow: hidden; }
+.status b { color: #fff; }
+@media (max-width: 860px) { body { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr 46px; } .modes { flex-direction: row; overflow-x: auto; grid-row: 2; grid-column: 1; } nav { grid-row: 1; grid-column: 1; flex-direction: row; overflow-x: auto; } main { grid-row: 3; grid-column: 1; } .svc { grid-template-columns: 1fr 1fr; } }
+</style></head><body>
+<aside class="modes"><div class="h">Режим</div>
+  <button class="on"><i>🚀</i>Auto-Best<small>самый быстрый</small></button>
+  <button><i>🛡️</i>Fallback<small>запасной</small></button>
+  <button><i>⚙️</i>Manual<small>выберу сам</small></button></aside>
+<main><h1>Обзор</h1><p class="s">Меню справа, режимы слева, статус внизу</p>
+  <div class="hero"><span class="f">🇸🇪</span><div><b>Швеция 287220</b><span>● подключено · 53 мс</span></div></div>
+  <div class="svc"><div>▶️ YouTube<em>через VPN</em></div><div>💬 Discord<em>через VPN</em></div><div>📷 Instagram<em>через VPN</em></div><div>✈️ Telegram<em>через VPN</em></div><div class="off">🏦 Банки<em>напрямую</em></div><div class="off">🎮 Игры<em>напрямую</em></div></div>
+</main>
+<nav><div class="brand">Keen<b>Way</b></div><a class="on">Обзор</a><a>Подключение</a><a>Сервисы</a><a>Свои сайты</a><a>Устройства</a><a>Серверы</a><a>Трафик</a><a>Настройки</a></nav>
+<div class="status"><span>● <b>Защищено</b></span><span>Пинг <b>53 мс</b></span><span>Подписка <b>24 дня</b></span><span>Трафик <b>28 / 3221 ГБ</b></span><span>Живых серверов <b>73/92</b></span><span>Роутер <b>192.168.1.1</b></span></div>
+</body></html>

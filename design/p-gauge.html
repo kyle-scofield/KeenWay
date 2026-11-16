@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · P · Спидометр и нижняя панель</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: #0d1117; color: #e6edf3; font: 15px/1.5 system-ui, sans-serif; padding-bottom: 90px; }
+.top { display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; }
+.brand { font-weight: 800; font-size: 20px; } .brand b { color: #f78166; }
+.ava { width: 36px; height: 36px; border-radius: 50%; background: #21262d; display: grid; place-items: center; }
+main { max-width: 760px; margin: 0 auto; padding: 0 20px; }
+.gauge { position: relative; width: 320px; height: 180px; margin: 10px auto 0; }
+.gauge svg { width: 100%; height: 100%; }
+.gauge .v { position: absolute; left: 0; right: 0; bottom: 6px; text-align: center; }
+.gauge .v b { font-size: 46px; font-weight: 800; } .gauge .v span { color: #8b949e; }
+.cap { text-align: center; color: #3fb950; font-weight: 700; margin: 4px 0 22px; }
+.seg { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); background: #161b22; border: 1px solid #30363d; border-radius: 16px; padding: 5px; }
+.seg .ind { position: absolute; top: 5px; bottom: 5px; left: 5px; width: calc((100% - 10px) / 3); border-radius: 12px; background: linear-gradient(135deg, #f78166, #db61a2); box-shadow: 0 6px 18px #f7816655; }
+.seg button { position: relative; font: inherit; font-weight: 600; background: none; border: 0; color: #8b949e; padding: 12px 6px; cursor: pointer; }
+.seg button.on { color: #fff; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 18px 0; }
+.st { background: #161b22; border: 1px solid #30363d; border-radius: 14px; padding: 14px; text-align: center; }
+.st b { display: block; font-size: 20px; } .st span { color: #8b949e; font-size: 13px; }
+.circles { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; text-align: center; font-size: 12px; color: #8b949e; }
+.c { width: 54px; height: 54px; margin: 0 auto 6px; border-radius: 50%; display: grid; place-items: center; font-size: 24px; background: #161b22; border: 2px solid #3fb950; }
+.c.off { border-color: #30363d; opacity: .6; }
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-around; background: #161b22ee; backdrop-filter: blur(10px); border-top: 1px solid #30363d; padding: 10px 0 14px; }
+.tabbar a { display: flex; flex-direction: column; align-items: center; font-size: 12px; color: #8b949e; gap: 2px; } .tabbar a i { font-style: normal; font-size: 20px; }
+.tabbar a.on { color: #f78166; }
+</style></head><body>
+<div class="top"><div class="brand">Keen<b>Way</b></div><div class="ava">⚙️</div></div>
+<main>
+  <div class="gauge">
+    <svg viewBox="0 0 320 180"><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#3fb950"/><stop offset=".6" stop-color="#d29922"/><stop offset="1" stop-color="#f85149"/></linearGradient></defs>
+      <path d="M30 165 A130 130 0 0 1 290 165" fill="none" stroke="#21262d" stroke-width="22" stroke-linecap="round"/>
+      <path d="M30 165 A130 130 0 0 1 290 165" fill="none" stroke="url(#g)" stroke-width="22" stroke-linecap="round" stroke-dasharray="408" stroke-dashoffset="330"/>
+    </svg>
+    <div class="v"><b>53</b> <span>мс</span></div>
+  </div>
+  <div class="cap">● Защищено · 🇸🇪 Швеция 287220</div>
+  <div class="seg"><span class="ind"></span><button class="on">🚀 Auto-Best</button><button>🛡️ Fallback</button><button>⚙️ Manual</button></div>
+  <div class="stats"><div class="st"><b>24</b><span>дня осталось</span></div><div class="st"><b>28 ГБ</b><span>из 3221</span></div><div class="st"><b>73</b><span>живых серверов</span></div></div>
+  <div class="circles">
+    <div><div class="c">▶️</div>YouTube</div><div><div class="c">💬</div>Discord</div><div><div class="c">📷</div>Instagram</div>
+    <div><div class="c">✈️</div>Telegram</div><div><div class="c off">🏦</div>Банки</div><div><div class="c off">🎮</div>Игры</div>
+  </div>
+</main>
+<nav class="tabbar"><a class="on"><i>🏠</i>Обзор</a><a><i>🌍</i>Серверы</a><a><i>🧩</i>Сервисы</a><a><i>📱</i>Устройства</a><a><i>⚙️</i>Ещё</a></nav>
+</body></html>

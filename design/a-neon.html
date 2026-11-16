@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · вариант A · Неон</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: flex; color: #eef0ff; font: 15px/1.5 system-ui, sans-serif;
+  background: radial-gradient(1000px 500px at 10% -10%, #4c1d9566, transparent), radial-gradient(800px 500px at 100% 0%, #0e749066, transparent), #07080d; }
+nav { width: 230px; flex: none; padding: 22px 14px; display: flex; flex-direction: column; gap: 4px; border-right: 1px solid #ffffff14; background: #ffffff06; }
+.brand { font-weight: 800; font-size: 22px; padding: 0 10px 20px; }
+.brand b { background: linear-gradient(90deg, #a78bfa, #22d3ee); -webkit-background-clip: text; background-clip: text; color: transparent; }
+nav a { padding: 10px 12px; border-radius: 12px; color: #a3a8c3; }
+nav a.on { color: #fff; background: linear-gradient(90deg, #7c3aed55, #06b6d422); box-shadow: inset 0 0 0 1px #a78bfa55; }
+main { flex: 1; padding: 30px 34px; }
+h1 { font-size: 26px; margin: 0 0 22px; }
+.hero { display: grid; grid-template-columns: 210px 1fr; gap: 28px; align-items: center; padding: 26px; border-radius: 24px; background: #ffffff0b; border: 1px solid #ffffff17; }
+.orb { width: 200px; height: 200px; border-radius: 50%; display: grid; place-items: center; text-align: center; font-weight: 800; font-size: 20px;
+  background: radial-gradient(circle at 30% 30%, #22d3ee, #7c3aed 60%, #1e1b4b); box-shadow: 0 0 60px #7c3aed88, 0 0 120px #22d3ee44; }
+.orb small { display: block; font-weight: 500; font-size: 13px; opacity: .85; }
+.k { color: #8b90ad; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+.big { font-size: 22px; font-weight: 700; margin: 4px 0 14px; }
+.modes { display: inline-flex; gap: 4px; padding: 4px; margin: 0 0 16px; border-radius: 14px; background: #ffffff0d; border: 1px solid #ffffff14; }
+.modes button { font: inherit; font-size: 14px; border: 0; padding: 7px 14px; border-radius: 10px; cursor: pointer; background: transparent; color: #a3a8c3; }
+.modes button.on { color: #fff; font-weight: 600; background: linear-gradient(90deg, #7c3aed, #0891b2); box-shadow: 0 4px 18px #7c3aed66; }
+.bar { height: 8px; border-radius: 99px; background: #ffffff14; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 9%; background: linear-gradient(90deg, #22d3ee, #a78bfa); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 22px; }
+.tile { padding: 16px; border-radius: 18px; background: #ffffff0b; border: 1px solid #ffffff14; }
+.tile b { display: block; margin: 6px 0 2px; }
+.tile span { color: #22d3ee; font-size: 12px; font-weight: 600; }
+.tile.off span { color: #8b90ad; }
+@media (max-width: 760px) { body { flex-direction: column; } nav { width: 100%; flex-direction: row; overflow-x: auto; } .hero { grid-template-columns: 1fr; justify-items: center; } }
+</style>
+</head>
+<body>
+<nav>
+  <div class="brand">Keen<b>Way</b></div>
+  <a class="on">Обзор</a><a>Подключение</a><a>Сервисы</a><a>Свои сайты</a><a>Устройства</a><a>Серверы</a><a>Трафик</a><a>Настройки</a>
+</nav>
+<main>
+  <h1>Обзор</h1>
+  <div class="hero">
+    <div class="orb"><div>Защищено<small>Auto-Best · 53 мс</small></div></div>
+    <div>
+      <div class="k">Сервер сейчас</div>
+      <div class="big">🇸🇪 Швеция 287220</div>
+      <div class="modes"><button class="on">🚀 Auto-Best</button><button>🛡️ Fallback</button><button>⚙️ Manual</button></div>
+      <div class="k">Подписка VPNN</div>
+      <div class="big">24 дня · 28 из 3221 ГБ</div>
+      <div class="bar"><i></i></div>
+    </div>
+  </div>
+  <div class="tiles">
+    <div class="tile">▶️<b>YouTube</b><span>через VPN</span></div>
+    <div class="tile">💬<b>Discord</b><span>через VPN</span></div>
+    <div class="tile">📷<b>Instagram</b><span>через VPN</span></div>
+    <div class="tile">✈️<b>Telegram</b><span>через VPN</span></div>
+    <div class="tile off">🏦<b>Банки</b><span>напрямую</span></div>
+    <div class="tile off">🎮<b>Игры</b><span>напрямую</span></div>
+  </div>
+</main>
+</body>
+</html>

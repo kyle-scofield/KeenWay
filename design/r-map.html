@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · R · Карта серверов</title>
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: #0b1020; color: #e8ecf8; font: 15px/1.5 system-ui, sans-serif; overflow: hidden; }
+#map { position: fixed; inset: 0; width: 100%; height: 100%; cursor: grab; }
+#map:active { cursor: grabbing; }
+.land { fill: #16203d; stroke: #2a3a68; stroke-width: .6; }
+.land.has { fill: #1b2a52; }
+.grat { fill: none; stroke: #ffffff08; }
+.pin { cursor: pointer; }
+.pin .dot { fill: #64748b; stroke: #0b1020; stroke-width: 2; transition: fill .2s; }
+.pin:hover .dot { fill: #e2e8f0; }
+.pin.on .dot { fill: #22d3ee; }
+.pin .halo { fill: #22d3ee; opacity: 0; }
+.pin.on .halo { animation: pulse 1.8s ease-out infinite; }
+@keyframes pulse { 0% { opacity: .55; r: 6; } 100% { opacity: 0; r: 26; } }
+.pin text { fill: #cbd5e1; font-size: 11px; font-weight: 600; paint-order: stroke; stroke: #0b1020; stroke-width: 3px; pointer-events: none; opacity: 0; }
+.pin:hover text, .pin.on text { opacity: 1; }
+.home .dot { fill: #fbbf24; } .home .halo { fill: #fbbf24; opacity: .25; }
+.route { fill: none; stroke: #22d3ee; stroke-width: 2; stroke-linecap: round; filter: drop-shadow(0 0 4px #22d3ee); }
+.route.going { stroke-dasharray: 6 6; animation: dash .6s linear infinite; }
+@keyframes dash { to { stroke-dashoffset: -12; } }
+.card { position: fixed; left: 24px; top: 24px; width: 370px; max-width: calc(100% - 32px); max-height: calc(100% - 48px); overflow: auto; background: #111a33e6; backdrop-filter: blur(14px); border: 1px solid #23305a; border-radius: 22px; padding: 20px; }
+.brand { font-weight: 800; font-size: 20px; margin-bottom: 14px; } .brand b { color: #22d3ee; }
+.now { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; background: #0b1020; }
+.now .f { font-size: 34px; } .now b { display: block; font-size: 18px; }
+.now .s { font-size: 13px; font-weight: 600; color: #22d3ee; }
+.now .s.wait { color: #fbbf24; }
+.spin { display: inline-block; width: 10px; height: 10px; border: 2px solid #fbbf24; border-right-color: transparent; border-radius: 50%; animation: r .7s linear infinite; vertical-align: -1px; margin-right: 4px; }
+@keyframes r { to { transform: rotate(360deg); } }
+.chips { display: flex; gap: 8px; margin: 14px 0; }
+.chip { flex: 1; font: inherit; text-align: center; padding: 10px 4px; white-space: nowrap; border-radius: 12px; border: 1px solid #23305a; background: transparent; color: #9fb0d8; font-weight: 600; font-size: 13px; cursor: pointer; }
+.chip.on { background: #22d3ee; border-color: #22d3ee; color: #04121a; }
+.hint { font-size: 13px; color: #9fb0d8; margin: 0 0 10px; }
+.sl { display: flex; flex-direction: column; gap: 2px; }
+.s { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
+.s:hover { background: #0b1020; } .s.on { background: #22d3ee1f; }
+.s .n { flex: 1; } .s .p { font-size: 13px; color: #9fb0d8; width: 58px; text-align: right; }
+.bars { display: flex; gap: 2px; align-items: end; height: 14px; } .bars i { width: 3px; background: #22d3ee; border-radius: 1px; } .bars i.d { background: #23305a; }
+.foot { margin-top: 12px; font-size: 13px; color: #9fb0d8; }
+.zoom { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 6px; }
+.zoom button { width: 40px; height: 40px; border-radius: 12px; border: 1px solid #23305a; background: #111a33e6; color: #e8ecf8; font-size: 20px; cursor: pointer; }
+.err { position: fixed; right: 20px; top: 20px; background: #3b1a1d; color: #fecaca; padding: 10px 14px; border-radius: 12px; display: none; }
+@media (max-width: 760px) { .card { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; max-height: 55%; } }
+</style>
+</head><body>
+<svg id="map"></svg>
+<div class="card">
+  <div class="brand">Keen<b>Way</b></div>
+  <div class="now"><span class="f" id="flag"></span><div><b id="name"></b><span class="s" id="state"></span></div></div>
+  <div class="chips"><button class="chip" data-mode="auto">🚀 Auto-Best</button><button class="chip" data-mode="fallback">🛡️ Fallback</button><button class="chip" data-mode="manual">⚙️ Manual</button></div>
+  <p class="hint">Нажмите на точку на карте или на сервер в списке — роутер подключится к нему.</p>
+  <div class="sl" id="list"></div>
+  <div class="foot">Подписка VPNN · 24 дня · 28 из 3221 ГБ</div>
+</div>
+<div class="zoom"><button id="zin" title="Приблизить">+</button><button id="zout" title="Отдалить">−</button><button id="zhome" title="Европа">⌂</button></div>
+<div class="err" id="err">Не удалось загрузить карту — нужен интернет</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script>
+// Example data: names and pings are illustrative; in KeenWay they come from the subscription and mihomo.
+const HOME = { name: 'Назрань', lat: 43.22, lon: 44.77 };
+const SERVERS = [
+  { id: 'se', flag: '🇸🇪', name: 'Швеция 287220', lat: 59.33, lon: 18.07, ping: 53, iso: 752 },
+  { id: 'fi', flag: '🇫🇮', name: 'Финляндия 14', lat: 60.17, lon: 24.94, ping: 61, iso: 246 },
+  { id: 'de', flag: '🇩🇪', name: 'Германия 2', lat: 50.11, lon: 8.68, ping: 71, iso: 276 },
+  { id: 'nl', flag: '🇳🇱', name: 'Нидерланды 20', lat: 52.37, lon: 4.9, ping: 78, iso: 528 },
+  { id: 'pl', flag: '🇵🇱', name: 'Польша 6', lat: 52.23, lon: 21.01, ping: 66, iso: 616 },
+  { id: 'fr', flag: '🇫🇷', name: 'Франция 2', lat: 48.86, lon: 2.35, ping: 89, iso: 250 },
+  { id: 'md', flag: '🇲🇩', name: 'Молдова 2', lat: 47.01, lon: 28.86, ping: 58, iso: 498 },
+  { id: 'tr', flag: '🇹🇷', name: 'Турция 307547', lat: 41.01, lon: 28.98, ping: 140, iso: 792 },
+  { id: 'am', flag: '🇦🇲', name: 'Армения 4', lat: 40.18, lon: 44.51, ping: 34, iso: 51 },
+  { id: 'kz', flag: '🇰🇿', name: 'Казахстан 1', lat: 43.24, lon: 76.89, ping: 96, iso: 398 },
+  { id: 'us', flag: '🇺🇸', name: 'США 5', lat: 40.71, lon: -74.0, ping: 162, iso: 840 },
+  { id: 'jp', flag: '🇯🇵', name: 'Япония 6', lat: 35.68, lon: 139.69, ping: 210, iso: 392 },
+];
+const FASTEST = () => SERVERS.reduce((a, b) => (b.ping < a.ping ? b : a));
+let mode = 'auto', current = SERVERS[0], timer = null;
+
+const svg = d3.select('#map'), g = svg.append('g');
+const proj = d3.geoMercator();
+const path = d3.geoPath(proj);
+const W = () => innerWidth, H = () => innerHeight;
+
+function fitEurope() {
+  const box = { type: 'MultiPoint', coordinates: [[-12, 34], [60, 66]] };
+  proj.fitExtent([[innerWidth > 760 ? 400 : 20, 30], [W() - 30, H() - (innerWidth > 760 ? 30 : H() * .5)]], box);
+}
+
+function bars(p) { const n = p < 70 ? 3 : p < 120 ? 2 : 1; return [5, 9, 14].map((h, i) => `<i ${i >= n ? 'class="d"' : ''} style="height:${h}px"></i>`).join(''); }
+
+function renderCard(state) {
+  document.getElementById('flag').textContent = current.flag;
+  document.getElementById('name').textContent = current.name;
+  const st = document.getElementById('state');
+  st.className = 's' + (state === 'wait' ? ' wait' : '');
+  st.innerHTML = state === 'wait' ? '<span class="spin"></span>подключаюсь…' : `● подключено · ${current.ping} мс`;
+  document.querySelectorAll('.chip').forEach((c) => c.classList.toggle('on', c.dataset.mode === mode));
+  document.getElementById('list').innerHTML = [...SERVERS].sort((a, b) => a.ping - b.ping).map((s) =>
+    `<div class="s ${s === current ? 'on' : ''}" data-id="${s.id}">${s.flag}<span class="n">${s.name}</span><span class="bars">${bars(s.ping)}</span><span class="p">${s.ping} мс</span></div>`).join('');
+  d3.selectAll('.pin.srv').classed('on', (d) => d === current);
+}
+
+function route(state) {
+  const line = { type: 'LineString', coordinates: [[HOME.lon, HOME.lat], [current.lon, current.lat]] };
+  g.select('.route').datum(line).attr('d', path).classed('going', state === 'wait');
+}
+
+function connect(server, newMode) {
+  current = server; mode = newMode;
+  clearTimeout(timer);
+  renderCard('wait'); route('wait');
+  timer = setTimeout(() => { renderCard('ok'); route('ok'); }, 1300);
+}
+
+document.querySelector('.chips').addEventListener('click', (e) => {
+  const m = e.target.closest('.chip')?.dataset.mode; if (!m) return;
+  if (m === 'auto') connect(FASTEST(), 'auto'); else { mode = m; renderCard('ok'); }
+});
+document.getElementById('list').addEventListener('click', (e) => {
+  const id = e.target.closest('.s')?.dataset.id; if (id) connect(SERVERS.find((s) => s.id === id), 'manual');
+});
+
+const zoom = d3.zoom().scaleExtent([0.5, 12]).on('zoom', (ev) => {
+  g.attr('transform', ev.transform);
+  g.selectAll('.pin').attr('transform', function (d) { const [x, y] = proj([d.lon, d.lat]); return `translate(${x},${y}) scale(${1 / ev.transform.k})`; });
+});
+svg.call(zoom);
+document.getElementById('zin').onclick = () => svg.transition().call(zoom.scaleBy, 1.6);
+document.getElementById('zout').onclick = () => svg.transition().call(zoom.scaleBy, 1 / 1.6);
+document.getElementById('zhome').onclick = () => svg.transition().call(zoom.transform, d3.zoomIdentity);
+
+fetch('https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json').then((r) => r.json()).then((world) => {
+  fitEurope();
+  const has = new Set(SERVERS.map((s) => s.iso));
+  g.append('path').attr('class', 'grat').attr('d', path(d3.geoGraticule10()));
+  g.selectAll('.land').data(topojson.feature(world, world.objects.countries).features).join('path')
+    .attr('class', (d) => 'land' + (has.has(+d.id) ? ' has' : '')).attr('d', path);
+  g.append('path').attr('class', 'route');
+  const pins = g.selectAll('.pin').data([HOME, ...SERVERS]).join('g')
+    .attr('class', (d) => (d === HOME ? 'pin home' : 'pin srv'))
+    .attr('transform', (d) => { const [x, y] = proj([d.lon, d.lat]); return `translate(${x},${y})`; });
+  pins.append('circle').attr('class', 'halo').attr('r', 6);
+  pins.append('circle').attr('class', 'dot').attr('r', (d) => (d === HOME ? 6 : 7));
+  pins.append('text').attr('x', 11).attr('y', 4).text((d) => (d === HOME ? '🏠 ' + d.name : `${d.flag} ${d.name} · ${d.ping} мс`));
+  pins.filter((d) => d !== HOME).on('click', (e, d) => connect(d, 'manual'));
+  renderCard('ok'); route('ok');
+  const pick = SERVERS.find((x) => '#' + x.id === location.hash);
+  if (pick) connect(pick, 'manual');
+}).catch(() => { document.getElementById('err').style.display = 'block'; renderCard('ok'); });
+addEventListener('resize', () => location.reload());
+</script>
+</body></html>

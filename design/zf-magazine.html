@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · Газета</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #f4efe4; color: #1a1a1a; font: 16px/1.55 Georgia, "Times New Roman", serif; }
+.page { max-width: 980px; margin: 0 auto; padding: 26px 22px 40px; }
+.mast { text-align: center; border-bottom: 3px double #1a1a1a; padding-bottom: 10px; }
+.mast h1 { margin: 0; font-size: 58px; letter-spacing: .02em; font-weight: 900; }
+.meta { display: flex; justify-content: space-between; font: 12px/1 system-ui, sans-serif; text-transform: uppercase; letter-spacing: .1em; padding: 8px 0; border-bottom: 1px solid #1a1a1a; }
+.edition { display: flex; gap: 0; border: 1px solid #1a1a1a; margin: 14px 0; }
+.edition span { flex: 1; text-align: center; padding: 8px; font: 700 13px system-ui, sans-serif; text-transform: uppercase; letter-spacing: .06em; border-right: 1px solid #1a1a1a; cursor: pointer; }
+.edition span:last-child { border-right: 0; }
+.edition .on { background: #1a1a1a; color: #f4efe4; }
+.grid { display: grid; grid-template-columns: 2fr 1fr; gap: 26px; }
+.lead h2 { font-size: 40px; line-height: 1.05; margin: 6px 0 10px; }
+.kicker { font: 700 12px system-ui, sans-serif; color: #b91c1c; text-transform: uppercase; letter-spacing: .12em; }
+.lead p:first-of-type::first-letter { float: left; font-size: 54px; line-height: .9; padding: 4px 6px 0 0; font-weight: 900; }
+.cols { columns: 2; column-gap: 22px; column-rule: 1px solid #c9bfa8; }
+.side { border-left: 1px solid #1a1a1a; padding-left: 20px; }
+.side h3 { font-size: 20px; margin: 0 0 8px; border-bottom: 1px solid #1a1a1a; }
+.side ul { list-style: none; padding: 0; margin: 0 0 18px; }
+.side li { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dotted #a89f8a; font-size: 15px; }
+.big { font-size: 48px; font-weight: 900; line-height: 1; }
+@media (max-width: 760px) { .grid { grid-template-columns: 1fr; } .cols { columns: 1; } .side { border-left: 0; padding-left: 0; } .mast h1 { font-size: 40px; } }
+</style></head><body><div class="page">
+<div class="mast"><h1>Вестник KeenWay</h1></div>
+<div class="meta"><span>Назрань · 16 ноября</span><span>Выпуск №4</span><span>Роутер 192.168.1.1</span></div>
+<div class="edition"><span class="on">🚀 Auto-Best</span><span>🛡️ Fallback</span><span>⚙️ Manual</span></div>
+<div class="grid">
+  <article class="lead"><div class="kicker">Главное сегодня</div>
+    <h2>Интернет снова свободен: YouTube, Discord и Instagram открываются</h2>
+    <div class="cols"><p>Ночью роутер держал российский сервер в ручном режиме, и заблокированные сайты не открывались. Утром режим вернули на «Auto-Best» — роутер сам выбрал Швецию с пингом 53 мс.</p>
+    <p>Подписка VPNN в порядке: осталось 24 дня и почти весь трафик. Из 92 серверов отвечают 73. Банки и Госуслуги, как и прежде, идут напрямую.</p></div></article>
+  <aside class="side">
+    <h3>Сводка</h3>
+    <div class="big">53<small style="font-size:18px"> мс</small></div><p style="margin:2px 0 14px">🇸🇪 Швеция 287220</p>
+    <h3>Через VPN</h3>
+    <ul><li>YouTube<span>✓</span></li><li>Discord<span>✓</span></li><li>Instagram<span>✓</span></li><li>Telegram<span>✓</span></li><li>Банки<span>напрямую</span></li></ul>
+    <h3>Подписка</h3><p>24 дня · 28 из 3221 ГБ</p>
+  </aside>
+</div></div></body></html>

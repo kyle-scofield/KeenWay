@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · T · Колонки (как доска задач)</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: #eef1f6; color: #1a2233; font: 15px/1.5 system-ui, sans-serif; }
+header { display: flex; align-items: center; gap: 16px; padding: 16px 26px; background: #1a2233; color: #fff; flex-wrap: wrap; }
+.brand { font-weight: 800; font-size: 20px; } .brand b { color: #fbbf24; }
+.drop { display: flex; align-items: center; gap: 10px; background: #2a3550; border-radius: 10px; padding: 7px 12px; }
+.drop span { color: #9aa6c2; font-size: 13px; }
+.dd { display: flex; gap: 3px; background: #1a2233; border-radius: 8px; padding: 3px; }
+.dd b { font-weight: 600; font-size: 13px; padding: 4px 10px; border-radius: 6px; color: #9aa6c2; }
+.dd b.on { background: #fbbf24; color: #1a2233; }
+.st { margin-left: auto; font-size: 14px; color: #c9d2e6; } .st i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #4ade80; margin-right: 6px; }
+main { padding: 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.col { background: #e2e7f0; border-radius: 14px; padding: 12px; min-height: 360px; }
+.col h2 { font-size: 14px; margin: 4px 6px 12px; display: flex; justify-content: space-between; }
+.col h2 span { background: #fff; border-radius: 99px; padding: 0 9px; font-size: 12px; color: #5b6680; }
+.vpn h2 { color: #4f46e5; } .dir h2 { color: #0f766e; } .blk h2 { color: #b91c1c; }
+.c { background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 2px #1a22331a; display: flex; align-items: center; gap: 10px; cursor: grab; }
+.c .t { flex: 1; font-weight: 600; } .c small { color: #8a94ab; }
+.vpn .c { border-left: 4px solid #4f46e5; } .dir .c { border-left: 4px solid #0f766e; } .blk .c { border-left: 4px solid #b91c1c; }
+.add { border: 2px dashed #b9c2d6; border-radius: 10px; padding: 10px; text-align: center; color: #7d879e; font-weight: 600; }
+.hint { grid-column: 1 / -1; color: #5b6680; font-size: 13px; text-align: center; }
+@media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+</style></head><body>
+<header>
+  <div class="brand">Keen<b>Way</b></div>
+  <div class="drop"><span>Сервер:</span><div class="dd"><b class="on">🚀 Auto-Best</b><b>🛡️ Fallback</b><b>⚙️ Manual</b></div></div>
+  <div class="st"><i></i>🇸🇪 Швеция · 53 мс · 24 дня</div>
+</header>
+<main>
+  <section class="col vpn"><h2>Через VPN <span>4</span></h2>
+    <div class="c">▶️<span class="t">YouTube</span><small>⋮⋮</small></div><div class="c">💬<span class="t">Discord</span><small>⋮⋮</small></div>
+    <div class="c">📷<span class="t">Instagram</span><small>⋮⋮</small></div><div class="c">✈️<span class="t">Telegram</span><small>⋮⋮</small></div>
+    <div class="add">+ сайт</div></section>
+  <section class="col dir"><h2>Напрямую <span>3</span></h2>
+    <div class="c">🏦<span class="t">Банки</span><small>⋮⋮</small></div><div class="c">🏛️<span class="t">Госуслуги</span><small>⋮⋮</small></div>
+    <div class="c">🎮<span class="t">Игры</span><small>⋮⋮</small></div><div class="add">+ сайт</div></section>
+  <section class="col blk"><h2>Блокировать <span>1</span></h2>
+    <div class="c">🚫<span class="t">Реклама</span><small>⋮⋮</small></div><div class="add">+ сайт</div></section>
+  <div class="hint">Перетащите сервис в нужную колонку — роутер сразу пустит его этим путём.</div>
+</main>
+</body></html>

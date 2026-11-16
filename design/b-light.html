@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · вариант B · Светлый минимализм</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: flex; background: #fbfbfd; color: #1d1d1f; font: 15px/1.5 system-ui, sans-serif; }
+nav { width: 210px; flex: none; padding: 28px 18px; display: flex; flex-direction: column; gap: 2px; }
+.brand { font-weight: 800; font-size: 20px; padding: 0 10px 24px; letter-spacing: -.02em; }
+nav a { padding: 9px 10px; border-radius: 10px; color: #6e6e73; }
+nav a.on { background: #fff; color: #1d1d1f; box-shadow: 0 1px 3px #0000001a; font-weight: 600; }
+main { flex: 1; padding: 40px 44px; max-width: 880px; }
+h1 { font-size: 34px; letter-spacing: -.03em; margin: 0 0 4px; }
+.sub { color: #6e6e73; font-size: 17px; margin-bottom: 28px; }
+.status { display: flex; align-items: center; gap: 18px; padding: 24px; border-radius: 22px; background: #fff; box-shadow: 0 2px 20px #0000000f; }
+.dot { width: 54px; height: 54px; border-radius: 50%; background: #34c759; display: grid; place-items: center; color: #fff; font-size: 26px; flex: none; }
+.status h2 { margin: 0; font-size: 21px; }
+.status p { margin: 3px 0 0; color: #6e6e73; }
+.toggle { margin-left: auto; width: 52px; height: 31px; border-radius: 99px; background: #34c759; position: relative; flex: none; }
+.toggle::after { content: ''; position: absolute; right: 2px; top: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px #0003; }
+.list { margin-top: 26px; background: #fff; border-radius: 18px; box-shadow: 0 2px 20px #0000000f; overflow: hidden; }
+.li { display: flex; align-items: center; gap: 14px; padding: 15px 20px; border-bottom: 1px solid #f0f0f2; }
+.li:last-child { border-bottom: 0; }
+.ic { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; color: #fff; font-weight: 700; flex: none; }
+.t { flex: 1; font-weight: 500; }
+.m { color: #6e6e73; font-size: 14px; }
+.sw { width: 42px; height: 25px; border-radius: 99px; background: #34c759; position: relative; flex: none; }
+.sw::after { content: ''; position: absolute; right: 2px; top: 2px; width: 21px; height: 21px; border-radius: 50%; background: #fff; }
+.sw.off { background: #e5e5ea; } .sw.off::after { right: auto; left: 2px; }
+@media (max-width: 760px) { body { flex-direction: column; } nav { width: 100%; flex-direction: row; overflow-x: auto; } main { padding: 24px 16px; } }
+</style>
+</head>
+<body>
+<nav>
+  <div class="brand">KeenWay</div>
+  <a class="on">Обзор</a><a>Подключение</a><a>Сервисы</a><a>Свои сайты</a><a>Устройства</a><a>Серверы</a><a>Трафик</a><a>Настройки</a>
+</nav>
+<main>
+  <h1>Всё работает</h1>
+  <div class="sub">Роутер 192.168.1.1 · подписка на 24 дня</div>
+  <div class="status">
+    <div class="dot">✓</div>
+    <div><h2>VPN включён</h2><p>🇸🇪 Швеция 287220 · 53 мс · авто-выбор</p></div>
+    <div class="toggle"></div>
+  </div>
+  <div class="list">
+    <div class="li"><div class="ic" style="background:#ff3b30">▶</div><div class="t">YouTube</div><div class="m">через VPN</div><div class="sw"></div></div>
+    <div class="li"><div class="ic" style="background:#5865f2">D</div><div class="t">Discord</div><div class="m">через VPN</div><div class="sw"></div></div>
+    <div class="li"><div class="ic" style="background:#e1306c">◎</div><div class="t">Instagram</div><div class="m">через VPN</div><div class="sw"></div></div>
+    <div class="li"><div class="ic" style="background:#2aabee">✈</div><div class="t">Telegram</div><div class="m">через VPN</div><div class="sw"></div></div>
+    <div class="li"><div class="ic" style="background:#34c759">₽</div><div class="t">Банки и Госуслуги</div><div class="m">напрямую</div><div class="sw off"></div></div>
+  </div>
+</main>
+</body>
+</html>

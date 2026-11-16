@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · Игровой HUD</title>
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: radial-gradient(circle at 50% 45%, #1b2a3a, #05080c 75%); color: #d6f3ff; font: 14px/1.4 "Segoe UI", system-ui, sans-serif; overflow: hidden; position: relative; }
+.corner { position: absolute; padding: 18px 22px; }
+.tl { top: 0; left: 0; } .tr { top: 0; right: 0; text-align: right; } .bl { bottom: 0; left: 0; } .br { bottom: 0; right: 0; text-align: right; }
+.frame { border: 1px solid #3fb7ff55; background: #0a1622cc; padding: 10px 14px; clip-path: polygon(0 0, 100% 0, 100% 75%, 90% 100%, 0 100%); }
+.lbl { font-size: 11px; letter-spacing: .14em; color: #6fa8c7; text-transform: uppercase; }
+.val { font-size: 22px; font-weight: 800; color: #fff; }
+.hp { width: 220px; height: 12px; background: #12222f; margin-top: 6px; border: 1px solid #3fb7ff55; } .hp i { display: block; height: 100%; width: 91%; background: linear-gradient(90deg, #22c55e, #a3e635); }
+.center { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); text-align: center; }
+.cross { width: 180px; height: 180px; border-radius: 50%; border: 2px solid #3fb7ff; display: grid; place-items: center; box-shadow: 0 0 40px #3fb7ff55, inset 0 0 30px #3fb7ff33; }
+.cross b { display: block; font-size: 30px; color: #fff; } .cross span { color: #7dd3fc; letter-spacing: .1em; font-size: 12px; }
+.bar { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); display: flex; gap: 10px; }
+.slot { width: 92px; height: 74px; border: 2px solid #3fb7ff55; background: #0a1622dd; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; font-size: 12px; font-weight: 700; }
+.slot i { font-style: normal; font-size: 24px; }
+.slot kbd { position: absolute; top: 3px; left: 5px; font: 11px ui-monospace, monospace; color: #6fa8c7; }
+.slot.on { border-color: #fbbf24; box-shadow: 0 0 18px #fbbf24aa, inset 0 0 14px #fbbf2455; color: #fde68a; }
+.buffs { display: flex; gap: 6px; margin-top: 8px; } .buffs span { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid #22c55e; background: #0a1622; } .buffs span.off { border-color: #334155; opacity: .5; }
+@media (max-width: 760px) { .slot { width: 70px; } .tr, .br { display: none; } }
+</style></head><body>
+<div class="corner tl"><div class="frame"><div class="lbl">KeenWay · игрок</div><div class="val">Швеция 287220</div><div class="lbl" style="margin-top:6px">Подписка 24 дня</div><div class="hp"><i></i></div></div></div>
+<div class="corner tr"><div class="frame"><div class="lbl">Пинг</div><div class="val">53 мс</div></div></div>
+<div class="corner bl"><div class="lbl">Через VPN</div><div class="buffs"><span>▶️</span><span>💬</span><span>📷</span><span>✈️</span><span class="off">🏦</span><span class="off">🎮</span></div></div>
+<div class="corner br"><div class="lbl">Трафик</div><div class="val">28 / 3221 ГБ</div></div>
+<div class="center"><div class="cross"><div><b>ONLINE</b><span>ЗАЩИЩЕНО</span></div></div></div>
+<div class="bar"><div class="slot on"><kbd>1</kbd><i>🚀</i>Auto-Best</div><div class="slot"><kbd>2</kbd><i>🛡️</i>Fallback</div><div class="slot"><kbd>3</kbd><i>⚙️</i>Manual</div><div class="slot"><kbd>Q</kbd><i>⚡</i>Пинг</div></div>
+</body></html>

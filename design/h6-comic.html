@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · 6 · Комикс</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: #fef08a; font: 16px/1.35 "Comic Sans MS", "Comic Neue", system-ui, sans-serif; color: #111; padding: 24px; }
+h1 { text-align: center; font-size: 34px; margin: 0 0 16px; text-transform: uppercase; letter-spacing: .04em; text-shadow: 3px 3px 0 #fff; }
+.strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 1060px; margin: 0 auto; }
+.panel { position: relative; background: #fff; border: 4px solid #111; height: 300px; padding: 14px; overflow: hidden; }
+.panel .n { position: absolute; top: 0; left: 0; background: #111; color: #fff; padding: 2px 10px; font-weight: 700; }
+.panel .hero { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 96px; }
+.b { position: relative; background: #fff; border: 3px solid #111; border-radius: 20px; padding: 10px 12px; margin-top: 22px; font-weight: 700; }
+.b::after { content: ''; position: absolute; bottom: -16px; left: 40%; border: 10px solid transparent; border-top: 14px solid #111; }
+.p1 { background: radial-gradient(#e5e5e5 1.5px, transparent 1.6px) 0 0 / 10px 10px, #fff; }
+.p2 { background: radial-gradient(#fecaca 1.5px, transparent 1.6px) 0 0 / 10px 10px, #fff; }
+.p3 { background: radial-gradient(#bbf7d0 1.5px, transparent 1.6px) 0 0 / 10px 10px, #fff; }
+.boom { position: absolute; top: 70px; right: 14px; background: #f97316; color: #fff; font-weight: 900; padding: 8px 12px; transform: rotate(10deg); clip-path: polygon(50% 0, 62% 30%, 100% 20%, 74% 50%, 100% 80%, 62% 70%, 50% 100%, 38% 70%, 0 80%, 26% 50%, 0 20%, 38% 30%); }
+.choose { max-width: 1060px; margin: 20px auto 0; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.choose b { border: 4px solid #111; background: #fff; padding: 10px 18px; box-shadow: 5px 5px 0 #111; cursor: pointer; }
+.choose b.on { background: #22c55e; }
+@media (max-width: 760px) { .strip { grid-template-columns: 1fr; } }
+</style></head><body>
+<h1>Приключения Роутика</h1>
+<div class="strip">
+  <div class="panel p1"><span class="n">1</span><div class="b">Ночью меня выключили… а когда проснулся — держался за российский сервер 😬</div><div class="hero">📦</div></div>
+  <div class="panel p2"><span class="n">2</span><div class="b">Хозяин: «Где мой YouTube?!»</div><span class="boom">БАЦ!</span><div class="hero">😤</div></div>
+  <div class="panel p3"><span class="n">3</span><div class="b">Нашёл самый быстрый — Швеция, 53 мс! Всё работает, ещё 24 дня 🎉</div><div class="hero">😎</div></div>
+</div>
+<div class="choose"><b class="on">🚀 Auto-Best</b><b>🛡️ Fallback</b><b>⚙️ Manual</b></div>
+</body></html>

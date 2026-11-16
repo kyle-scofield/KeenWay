@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · Чат с роутером</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; height: 100vh; display: flex; flex-direction: column; background: #e9eef5; color: #0f172a; font: 15px/1.45 system-ui, sans-serif; }
+header { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #fff; border-bottom: 1px solid #dbe2ec; }
+.av { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #0ea5e9, #6366f1); color: #fff; display: grid; place-items: center; font-weight: 800; }
+header b { display: block; } header span { font-size: 13px; color: #16a34a; }
+.msgs { flex: 1; overflow: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; max-width: 760px; width: 100%; margin: 0 auto; }
+.b { max-width: 78%; padding: 10px 14px; border-radius: 18px; background: #fff; box-shadow: 0 1px 1px #0001; }
+.b.me { align-self: flex-end; background: #6366f1; color: #fff; border-bottom-right-radius: 6px; }
+.b.bot { border-bottom-left-radius: 6px; }
+.b .card { margin-top: 8px; padding: 10px; border-radius: 12px; background: #f1f5f9; display: grid; grid-template-columns: auto 1fr auto; gap: 4px 10px; font-size: 14px; }
+.b .card .g { color: #16a34a; font-weight: 700; }
+.t { font-size: 11px; opacity: .6; text-align: right; margin-top: 2px; }
+.quick { display: flex; gap: 8px; overflow-x: auto; padding: 8px 20px; max-width: 760px; width: 100%; margin: 0 auto; }
+.q { flex: none; padding: 8px 14px; border-radius: 99px; background: #fff; border: 1px solid #c7d2fe; color: #4338ca; font-weight: 600; font-size: 14px; cursor: pointer; }
+.q.on { background: #4338ca; color: #fff; border-color: #4338ca; }
+.input { display: flex; gap: 10px; padding: 12px 20px 18px; max-width: 760px; width: 100%; margin: 0 auto; }
+.input div { flex: 1; background: #fff; border-radius: 99px; padding: 12px 18px; color: #94a3b8; border: 1px solid #dbe2ec; }
+.input button { width: 46px; height: 46px; border-radius: 50%; border: 0; background: #6366f1; color: #fff; font-size: 18px; }
+</style></head><body>
+<header><div class="av">K</div><div><b>KeenWay · роутер</b><span>● онлайн · 🇸🇪 Швеция · 53 мс</span></div></header>
+<div class="msgs">
+  <div class="b bot">Привет! Я твой роутер. Всё работает 👍
+    <div class="card"><span>🌍</span><span>Сервер</span><span class="g">Швеция 287220</span><span>⚡</span><span>Пинг</span><span class="g">53 мс</span><span>📅</span><span>Подписка</span><span>24 дня</span><span>📦</span><span>Трафик</span><span>28 / 3221 ГБ</span></div>
+    <div class="t">00:31</div></div>
+  <div class="b me">почему ютуб не работал?<div class="t">00:32</div></div>
+  <div class="b bot">Был выбран российский сервер 🇷🇺 LTE в ручном режиме — через него блокировки не обходятся. Я переключился на 🚀 Auto-Best, теперь YouTube, Discord и Instagram открываются.<div class="t">00:32</div></div>
+  <div class="b me">добавь сайт rutracker через vpn<div class="t">00:33</div></div>
+  <div class="b bot">Готово ✅ rutracker.org теперь идёт через VPN. Применил с автооткатом — если что-то сломается, верну как было.<div class="t">00:33</div></div>
+</div>
+<div class="quick"><span class="q on">🚀 Auto-Best</span><span class="q">🛡️ Fallback</span><span class="q">⚙️ Manual</span><span class="q">⚡ Пинг всех</span><span class="q">📱 Устройства</span><span class="q">🔑 Добавить ключ</span></div>
+<div class="input"><div>Напишите роутеру…</div><button>➤</button></div>
+</body></html>

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · Таблица</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: #fff; color: #111827; font: 14px/1.45 system-ui, sans-serif; }
+.tabs { display: flex; align-items: end; gap: 2px; padding: 14px 18px 0; background: #f3f4f6; border-bottom: 1px solid #d1d5db; }
+.brand { font-weight: 800; margin-right: 18px; padding-bottom: 10px; } .brand b { color: #059669; }
+.tab { padding: 9px 16px; border: 1px solid transparent; border-bottom: 0; border-radius: 8px 8px 0 0; color: #4b5563; font-weight: 600; cursor: pointer; }
+.tab.on { background: #fff; border-color: #d1d5db; color: #059669; margin-bottom: -1px; }
+.tool { display: flex; gap: 8px; padding: 10px 18px; border-bottom: 1px solid #e5e7eb; align-items: center; flex-wrap: wrap; }
+.tool input { font: inherit; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; width: 220px; }
+.tool button { font: inherit; padding: 6px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; }
+.wrap { flex: 1; overflow: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th { position: sticky; top: 0; background: #f9fafb; text-align: left; font-size: 12px; text-transform: uppercase; color: #6b7280; padding: 9px 14px; border-bottom: 1px solid #e5e7eb; }
+td { padding: 9px 14px; border-bottom: 1px solid #f3f4f6; }
+tr.sel td { background: #ecfdf5; } tr:hover td { background: #f9fafb; }
+.ok { color: #059669; font-weight: 700; } .dead { color: #9ca3af; }
+.pbar { display: inline-block; width: 80px; height: 6px; background: #e5e7eb; border-radius: 3px; vertical-align: middle; margin-right: 6px; } .pbar i { display: block; height: 100%; background: #10b981; border-radius: 3px; }
+.foot { display: flex; gap: 22px; padding: 10px 18px; background: #f3f4f6; border-top: 1px solid #d1d5db; font-size: 13px; color: #374151; flex-wrap: wrap; }
+.foot b { color: #059669; }
+</style></head><body>
+<div class="tabs"><span class="brand">Keen<b>Way</b></span><span class="tab on">🚀 Auto-Best</span><span class="tab">🛡️ Fallback</span><span class="tab">⚙️ Manual</span></div>
+<div class="tool"><input placeholder="Поиск сервера…"><button>⚡ Пинг всех</button><button>Только живые</button><button>Сортировка: пинг ↑</button></div>
+<div class="wrap"><table>
+<thead><tr><th></th><th>Сервер</th><th>Страна</th><th>Протокол</th><th>Пинг</th><th>Статус</th></tr></thead>
+<tbody>
+<tr class="sel"><td>▶</td><td><b>Швеция 287220</b></td><td>🇸🇪 SE</td><td>VLESS Reality</td><td><span class="pbar"><i style="width:90%"></i></span>53 мс</td><td class="ok">● используется</td></tr>
+<tr><td></td><td>Финляндия 14</td><td>🇫🇮 FI</td><td>VLESS Reality</td><td><span class="pbar"><i style="width:84%"></i></span>61 мс</td><td class="ok">● жив</td></tr>
+<tr><td></td><td>Польша 6</td><td>🇵🇱 PL</td><td>Hysteria2</td><td><span class="pbar"><i style="width:80%"></i></span>66 мс</td><td class="ok">● жив</td></tr>
+<tr><td></td><td>Германия 2</td><td>🇩🇪 DE</td><td>VLESS Reality</td><td><span class="pbar"><i style="width:74%"></i></span>71 мс</td><td class="ok">● жив</td></tr>
+<tr><td></td><td>Нидерланды 20</td><td>🇳🇱 NL</td><td>Hysteria2</td><td><span class="pbar"><i style="width:70%"></i></span>78 мс</td><td class="ok">● жив</td></tr>
+<tr><td></td><td>Турция 307547</td><td>🇹🇷 TR</td><td>Hysteria2</td><td><span class="pbar"><i style="width:30%"></i></span>140 мс</td><td class="ok">● жив</td></tr>
+<tr><td></td><td>США 5</td><td>🇺🇸 US</td><td>VLESS Reality</td><td><span class="pbar"><i style="width:0"></i></span>—</td><td class="dead">○ не отвечает</td></tr>
+</tbody></table></div>
+<div class="foot"><span>Статус: <b>● защищено</b></span><span>Живых: <b>73</b> из 92</span><span>Подписка: 24 дня</span><span>Трафик: 28 / 3221 ГБ</span><span>Сервисы через VPN: YouTube, Discord, Instagram, Telegram</span></div>
+</body></html>

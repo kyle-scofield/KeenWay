@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · 1 · Мордочка роутера</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: #fff7e8; color: #3a2a1a; font: 16px/1.5 system-ui, sans-serif; display: grid; place-items: center; padding: 24px; }
+.wrap { width: 640px; max-width: 100%; text-align: center; }
+.bot { position: relative; width: 260px; height: 190px; margin: 0 auto; background: #ffd166; border-radius: 40px; box-shadow: 0 14px 0 #e9b949, 0 30px 50px #e9b94955; }
+.ant { position: absolute; top: -46px; width: 8px; height: 50px; background: #3a2a1a; border-radius: 4px; }
+.ant::after { content: ''; position: absolute; top: -10px; left: -7px; width: 22px; height: 22px; border-radius: 50%; background: #06d6a0; box-shadow: 0 0 18px #06d6a0; }
+.ant.l { left: 60px; transform: rotate(-14deg); } .ant.r { right: 60px; transform: rotate(14deg); }
+.eye { position: absolute; top: 58px; width: 34px; height: 40px; border-radius: 50%; background: #3a2a1a; }
+.eye.l { left: 62px; } .eye.r { right: 62px; }
+.eye::after { content: ''; position: absolute; top: 8px; left: 8px; width: 11px; height: 11px; border-radius: 50%; background: #fff; }
+.mouth { position: absolute; left: 50%; top: 112px; width: 80px; height: 40px; margin-left: -40px; border: 7px solid #3a2a1a; border-top: 0; border-radius: 0 0 50px 50px; }
+.cheek { position: absolute; top: 108px; width: 26px; height: 14px; border-radius: 50%; background: #ff8fa3; opacity: .7; } .cheek.l { left: 30px; } .cheek.r { right: 30px; }
+.bubble { position: relative; margin: 34px auto 0; background: #fff; border-radius: 24px; padding: 18px 22px; box-shadow: 0 6px 20px #e9b94933; font-size: 19px; }
+.bubble::before { content: ''; position: absolute; top: -12px; left: 50%; margin-left: -12px; border: 12px solid transparent; border-top: 0; border-bottom-color: #fff; }
+.bubble small { display: block; color: #8a6d4f; font-size: 14px; margin-top: 6px; }
+.ask { margin: 20px 0 8px; color: #8a6d4f; }
+.btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.btns b { padding: 12px 18px; border-radius: 99px; background: #fff; border: 2px solid #ffd166; cursor: pointer; font-weight: 600; }
+.btns b.on { background: #3a2a1a; color: #ffd166; border-color: #3a2a1a; }
+</style></head><body><div class="wrap">
+  <div class="bot"><span class="ant l"></span><span class="ant r"></span><span class="eye l"></span><span class="eye r"></span><span class="cheek l"></span><span class="cheek r"></span><span class="mouth"></span></div>
+  <div class="bubble">Ура, всё работает! YouTube и Discord снова открываются 🎉<small>Я сейчас дружу со Швецией — до неё всего 53 мс. Подписки хватит ещё на 24 дня.</small></div>
+  <div class="ask">Как мне выбирать сервер?</div>
+  <div class="btns"><b class="on">🚀 Сам находи самый быстрый</b><b>🛡️ Держись одного</b><b>⚙️ Я выберу сам</b></div>
+</div></body></html>

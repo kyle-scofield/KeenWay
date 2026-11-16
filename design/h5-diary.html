@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeenWay · 5 · Дневник роутера</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: #2d3b36; display: grid; place-items: center; padding: 26px 14px; font: 17px/1.6 Georgia, "Times New Roman", serif; color: #33291f; }
+.book { display: grid; grid-template-columns: 1fr 1fr; width: 960px; max-width: 100%; background: #f6ecd6; border-radius: 6px 14px 14px 6px; box-shadow: 0 30px 60px #0007, inset 0 0 0 1px #d7c7a3; position: relative; }
+.book::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 26px; margin-left: -13px; background: linear-gradient(90deg, transparent, #0002 45%, #0003 50%, #0002 55%, transparent); }
+.pg { padding: 34px 36px; }
+.date { font-style: italic; color: #8a6b4a; border-bottom: 1px solid #d7c7a3; padding-bottom: 6px; margin-bottom: 14px; }
+.entry { margin-bottom: 18px; } .entry time { font: 700 12px system-ui, sans-serif; color: #a0522d; letter-spacing: .08em; }
+.mood { font-size: 26px; float: right; }
+h2 { font-size: 22px; margin: 0 0 12px; font-weight: 400; font-style: italic; }
+.q { margin: 18px 0 8px; font-style: italic; color: #8a6b4a; }
+.opt { display: block; padding: 10px 14px; margin-bottom: 8px; border: 1px solid #d7c7a3; border-radius: 8px; cursor: pointer; font-family: system-ui, sans-serif; font-size: 15px; }
+.opt.on { background: #33291f; color: #f6ecd6; border-color: #33291f; }
+.facts { font: 14px/1.7 system-ui, sans-serif; margin-top: 16px; padding-top: 12px; border-top: 1px dashed #c9b48a; }
+@media (max-width: 760px) { .book { grid-template-columns: 1fr; } .book::after { display: none; } }
+</style></head><body>
+<div class="book">
+  <div class="pg">
+    <div class="date">Дневник роутера · 16 ноября</div>
+    <div class="entry"><span class="mood">😵</span><time>00:20</time><br>Меня внезапно выключили. Темно и тихо. Проснулся, все программы запустились сами — уф.</div>
+    <div class="entry"><span class="mood">😟</span><time>00:25</time><br>Хозяин говорит, YouTube не работает. Оказалось, я держался за российский сервер. Стыдно.</div>
+    <div class="entry"><span class="mood">😊</span><time>00:31</time><br>Переключился на «самый быстрый» — теперь дружу со Швецией. Всё открывается!</div>
+  </div>
+  <div class="pg">
+    <h2>Что мне делать дальше?</h2>
+    <div class="q">Как выбирать сервер:</div>
+    <span class="opt on">🚀 Находить самый быстрый сам</span>
+    <span class="opt">🛡️ Держаться одного, менять только при обрыве</span>
+    <span class="opt">⚙️ Пусть хозяин выбирает</span>
+    <div class="facts">🇸🇪 Швеция · 53 мс<br>📅 Подписка: 24 дня<br>📦 Трафик: 28 из 3221 ГБ<br>✅ YouTube · Discord · Instagram · Telegram</div>
+  </div>
+</div>
+</body></html>
