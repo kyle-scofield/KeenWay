@@ -148,7 +148,7 @@ pages.connect = async function () {
   const r = S.state.router;
   const host = h('input', { value: r.host || '192.168.1.1' });
   const user = h('input', { value: r.user || 'admin' });
-  const pass = h('input', { type: 'password', placeholder: 'пароль администратора роутера' });
+  const pass = h('input', { type: 'password', placeholder: 'пароль администратора роутера', autocomplete: 'off', 'data-lpignore': 'true', 'data-1p-ignore': 'true' });
   const remember = h('input', { type: 'checkbox', checked: r.remembered });
   const err = h('div', { class: 'small', style: 'color:var(--bad)' });
   const btn = h('button', { class: 'btn primary', type: 'submit' }, 'Подключиться');
@@ -156,7 +156,7 @@ pages.connect = async function () {
     h('h1', {}, 'Подключение к роутеру'),
     h('div', { class: 'card stack', style: 'max-width:520px' },
       h('p', { class: 'muted' }, 'Нужен Keenetic с установленным XKeen и ядром mihomo. Приложение заходит на роутер по SSH и больше никуда пароль не отправляет.'),
-      h('form', { class: 'stack', onsubmit: async (e) => {
+      h('form', { class: 'stack', autocomplete: 'off', onsubmit: async (e) => {
         e.preventDefault();
         err.textContent = '';
         btn.disabled = true;

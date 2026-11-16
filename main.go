@@ -4,6 +4,7 @@ package main
 
 import (
 	"embed"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"golang.org/x/term"
@@ -98,9 +99,18 @@ func main() {
 	fmt.Println("KeenWay:", url)
 	if !*noWindow {
 		openWindow(url)
-		// The window pings every few seconds; once it has been closed for a while, quit.
+		// The window pings every few seconds. If it never connects (a browser that hangs,
+		// e.g. waiting for a locked keyring), open KeenWay in the default browser instead.
 		go func() {
-			time.Sleep(30 * time.Second)
+			time.Sleep(25 * time.Second)
+			if srv.Idle() > 20*time.Second {
+				fmt.Println("Окно не загрузилось — открываю в браузере по умолчанию:", url)
+				openDefault(url)
+			}
+		}()
+		// Once the window has been closed for a while, quit.
+		go func() {
+			time.Sleep(60 * time.Second)
 			for range time.Tick(5 * time.Second) {
 				if srv.Idle() > 45*time.Second {
 					os.Exit(0)
@@ -151,7 +161,10 @@ func openWindow(url string) {
 	if dir, err := os.UserConfigDir(); err == nil {
 		profile = filepath.Join(dir, "KeenWay", "window")
 	}
-	args := []string{"--app=" + url, "--user-data-dir=" + profile, "--window-size=1180,820", "--no-first-run", "--no-default-browser-check"}
+	disablePasswordManager(profile)
+	// --password-store=basic: don't wait for the system keyring (after a reboot Chrome on Linux
+	// may hang on a locked keyring and load nothing); the window stores no passwords anyway.
+	args := []string{"--app=" + url, "--user-data-dir=" + profile, "--window-size=1180,820", "--no-first-run", "--no-default-browser-check", "--password-store=basic"}
 	for _, b := range browserCandidates() {
 		if path, err := exec.LookPath(b); err == nil {
 			if err := exec.Command(path, args...).Start(); err == nil {
@@ -159,6 +172,11 @@ func openWindow(url string) {
 			}
 		}
 	}
+	openDefault(url)
+}
+
+// openDefault opens the URL in the system's default browser.
+func openDefault(url string) {
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "windows":
@@ -170,6 +188,33 @@ func openWindow(url string) {
 	}
 	if err := cmd.Start(); err != nil {
 		fmt.Println("Откройте в браузере:", url)
+	}
+}
+
+// disablePasswordManager turns off "Save password?" in the KeenWay window's own browser profile:
+// the router password is kept by KeenWay itself (or not at all), never by the browser.
+func disablePasswordManager(profile string) {
+	path := filepath.Join(profile, "Default", "Preferences")
+	prefs := map[string]any{}
+	if b, err := os.ReadFile(path); err == nil {
+		if json.Unmarshal(b, &prefs) != nil {
+			return // unreadable: leave the browser's file alone
+		}
+	}
+	prefs["credentials_enable_service"] = false
+	p, _ := prefs["profile"].(map[string]any)
+	if p == nil {
+		p = map[string]any{}
+	}
+	p["password_manager_enabled"] = false
+	p["password_manager_leak_detection"] = false
+	prefs["profile"] = p
+	b, err := json.Marshal(prefs)
+	if err != nil {
+		return
+	}
+	if os.MkdirAll(filepath.Dir(path), 0o700) == nil {
+		_ = os.WriteFile(path, b, 0o600)
 	}
 }
 
