@@ -34,6 +34,7 @@ async function api(method, path, body) {
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   const data = await res.json().catch(() => ({}));
+  if (method !== 'GET' && path !== '/ping') statusAt = 0; // something changed on the router: next page asks again
   if (!res.ok) throw new Error(data.error || `Ошибка ${res.status}`);
   return data;
 }
@@ -128,6 +129,18 @@ async function flushSave() {
   await run();
 }
 
+// ---------- router status, shared by pages ----------
+// Pages show the last answer at once (tabs switch instantly); a background refresh keeps it fresh.
+let statusAt = 0, statusP = null;
+function getStatus(maxAge = 20000) {
+  if (S.status && Date.now() - statusAt < maxAge) return Promise.resolve(S.status);
+  if (!statusP) {
+    statusP = api('GET', '/status').then((st) => { S.status = st; statusAt = Date.now(); return st; }).finally(() => { statusP = null; });
+  }
+  return statusP;
+}
+setInterval(() => { if (!document.hidden && S.state?.hasPassword && !S.state?.panel) getStatus(0).catch(() => {}); }, 15000);
+
 // ---------- navigation ----------
 const pages = {};
 function go(name, opts) {
@@ -182,11 +195,10 @@ pages.connect = async function () {
 
 // ---------- overview ----------
 pages.overview = async function () {
-  mount(h('h1', {}, 'Обзор'), h('div', { class: 'empty' }, h('span', { class: 'spinner' })));
-  const st = await api('GET', '/status');
-  S.status = st;
+  if (!S.status) mount(h('h1', {}, 'Обзор'), h('div', { class: 'empty' }, h('span', { class: 'spinner' })));
+  const st = await getStatus();
   const alerts = [];
-  if (!st.online) alerts.push(h('div', { class: 'alert bad' }, '⛔', h('div', { class: 'grow' }, h('strong', {}, 'Панель mihomo не отвечает. '), st.error || '')));
+  if (!st.online) alerts.push(h('div', { class: `alert ${st.offline ? 'warn' : 'bad'}` }, st.offline ? '📡' : '⛔', h('div', { class: 'grow' }, h('strong', {}, st.offline ? 'Роутер не в сети. ' : 'Панель mihomo не отвечает. '), st.error || '')));
   if (S.ui.templateUpdater ?? S.state.templateUpdater) {
     alerts.push(h('div', { class: 'alert warn' }, '⚠️',
       h('div', { class: 'grow' }, h('strong', {}, 'На роутере включено автообновление шаблона (update-config.sh). '), 'Раз в несколько дней оно перезаписывает группы и правила и сотрёт ваши сайты и правила устройств.'),
@@ -589,10 +601,11 @@ pages.sites = async function () {
 pages.devices = async function () {
   const st = S.state.settings;
   st.devices = st.devices || [];
-  mount(h('h1', {}, 'Устройства'), h('div', { class: 'empty' }, h('span', { class: 'spinner' }), ' Получение данных с роутера…'));
   let devs = [];
   let note = null;
-  try { devs = await api('GET', '/devices'); S.devices = devs; } catch (e) { note = h('div', { class: 'alert warn' }, '⚠️', h('span', { class: 'grow' }, 'Список устройств недоступен: ' + e.message + '. Можно добавить IP вручную.')); }
+  if (S.devices && Date.now() - (S.devicesAt || 0) < 60000) devs = S.devices;
+  else mount(h('h1', {}, 'Устройства'), h('div', { class: 'empty' }, h('span', { class: 'spinner' }), ' Получение данных с роутера…'));
+  try { if (devs !== S.devices) { devs = await api('GET', '/devices'); S.devices = devs; S.devicesAt = Date.now(); } } catch (e) { note = h('div', { class: 'alert warn' }, '⚠️', h('span', { class: 'grow' }, 'Список устройств недоступен: ' + e.message + '. Можно добавить IP вручную.')); }
   const ruleFor = (ip) => st.devices.find((d) => d.ip === ip);
   const setRule = (name, ip, policy) => {
     st.devices = st.devices.filter((d) => d.ip !== ip);
@@ -629,8 +642,8 @@ pages.devices = async function () {
 
 // ---------- servers ----------
 pages.servers = async function () {
-  mount(h('h1', {}, 'Серверы'), h('div', { class: 'empty' }, h('span', { class: 'spinner' })));
-  const st = await api('GET', '/status');
+  if (!S.status) mount(h('h1', {}, 'Серверы'), h('div', { class: 'empty' }, h('span', { class: 'spinner' })));
+  const st = await getStatus();
   if (!st.online) return mount(h('h1', {}, 'Серверы'), h('div', { class: 'alert bad' }, '⛔ ', h('span', { class: 'grow' }, st.error)));
   const all = st.groups || [];
   const byName = Object.fromEntries(all.map((g) => [g.name, g]));
@@ -642,6 +655,11 @@ pages.servers = async function () {
   const nodes = pool ? pool.options.filter((o) => !isGroup(o)) : [];
   const delays = {};
   for (const p of st.providers || []) for (const n of p.nodes) if (n.delay) delays[n.name] = n.delay;
+  // pinging 90+ servers loads a small router (the internet lags for everyone): at most every 10 min on its own
+  const PING_EVERY = 10 * 60_000;
+  Object.assign(delays, S.pings?.delays || {});
+  const pingDue = () => !S.pings || Date.now() - S.pings.at > PING_EVERY;
+  const keepPings = () => { S.pings = { at: Date.now(), delays: { ...delays } }; };
 
   // What the VPN really uses now: follow the chain VPN → Auto-Best → server.
   const chain = [];
@@ -717,6 +735,7 @@ pages.servers = async function () {
     try {
       const res = await api('POST', '/test', { group: pool.name });
       for (const n of nodes) delays[n] = res[n] || 0;
+      keepPings();
     } catch (e) { toast(e.message); }
     testing = false;
     testBtn.disabled = false;
@@ -739,7 +758,7 @@ pages.servers = async function () {
     const mapTest = h('button', { class: 'btn', onclick: async () => {
       if (!pool) return;
       mapTest.disabled = true; mapTest.replaceChildren(h('span', { class: 'spinner sm' }), ' Пинг…');
-      try { const res = await api('POST', '/test', { group: pool.name }); for (const n of nodes) delays[n] = res[n] || 0; } catch (e) { toast(e.message); }
+      try { const res = await api('POST', '/test', { group: pool.name }); for (const n of nodes) delays[n] = res[n] || 0; keepPings(); } catch (e) { toast(e.message); }
       mapTest.disabled = false; mapTest.replaceChildren('⚡ Пинг всех');
       drawMap();
     } }, '⚡ Пинг всех');
@@ -750,7 +769,7 @@ pages.servers = async function () {
       mapBox,
     );
     await drawMap();
-    mapTest.click(); // fresh pings, then the map redraws with colours
+    if (pingDue()) mapTest.click(); // fresh pings, then the map redraws with colours
     return;
   }
   mount(
@@ -769,11 +788,25 @@ pages.servers = async function () {
     h('h2', {}, 'Сервисы'),
     h('div', { class: 'grid small' }, all.filter((g) => !g.hidden && g.name !== 'VPN' && g !== manual && g.type === 'Selector').map((g) => h('div', { class: 'card tile' }, icon(g.icon),
       h('div', { class: 'grow' }, h('div', { style: 'font-weight:600' }, g.name),
-        h('select', { onchange: async (e) => { try { await choose(g.name, e.target.value); toast(`${g.name} → ${e.target.value}`); } catch (er) { toast(er.message); } } }, g.options.map((o) => h('option', { value: o, selected: o === g.now }, o))))))),
+        lazySelect(g.options, g.now, async (v) => { try { await choose(g.name, v); toast(`${g.name} → ${v}`); } catch (er) { toast(er.message); } }))))),
   );
   draw();
-  runTest(); // ping right away when the tab opens
+  if (pingDue()) runTest(); // ping when the tab opens, unless it was done in the last minutes
 };
+
+// lazySelect: a <select> that holds only the chosen option until the user opens it.
+function lazySelect(options, now, onChange) {
+  const sel = h('select', { onchange: (e) => onChange(e.target.value) }, h('option', { value: now, selected: true }, now));
+  const fill = () => {
+    if (sel.dataset.full) return;
+    sel.dataset.full = '1';
+    sel.replaceChildren(...options.map((o) => h('option', { value: o, selected: o === now }, o)));
+  };
+  sel.addEventListener('pointerdown', fill);
+  sel.addEventListener('focus', fill);
+  sel.addEventListener('keydown', fill);
+  return sel;
+}
 
 // ---------- traffic ----------
 pages.traffic = async function () {
@@ -782,7 +815,7 @@ pages.traffic = async function () {
   for (const d of S.devices || []) names[d.ip] = d.name || d.hostname;
   for (const d of S.state.settings.devices || []) names[d.ip] = names[d.ip] || d.name;
   const draw = async () => {
-    const st = await api('GET', '/status');
+    const st = await getStatus(prev ? 1500 : 20000);
     if (!st.online || !st.traffic) return mount(h('h1', {}, 'Трафик'), h('div', { class: 'alert bad' }, '⛔ ', h('span', { class: 'grow' }, st.error || 'нет данных')));
     const t = st.traffic;
     const now = Date.now();
@@ -1177,7 +1210,7 @@ async function runApply(dry) {
     r.mark.replaceChildren(h('span', { class: 'spinner sm' }));
     status.replaceChildren(step[2] + '…');
   };
-  const close = h('button', { class: 'btn', disabled: true, onclick: () => { modal.remove(); loadState().then(() => go(S.page)); } }, 'Закрыть');
+  const close = h('button', { class: 'btn', disabled: true, onclick: () => { modal.remove(); statusAt = 0; loadState().then(() => go(S.page)); } }, 'Закрыть');
   const cancelBtn = h('button', { class: 'btn danger', onclick: async () => {
     if (!dry && !confirm('Отменить применение? Если новый конфиг уже включён, роутер вернётся к прежним настройкам.')) return;
     cancelBtn.disabled = true;
@@ -1230,7 +1263,7 @@ async function runApply(dry) {
             const warned = Object.values(rows).some((r) => r.info.textContent.startsWith('⚠️'));
             const lanWarn = rows.lan?.info.textContent.startsWith('⚠️');
             box = h('div', { class: `alert ${warned ? 'warn' : 'good'}` }, warned ? '⚠️' : '🎉', h('span', { class: 'grow' }, dry ? 'Конфиг в порядке — роутер его принял. Можно применять.' : lanWarn ? 'Настройки применены, но с этого компьютера сайты через роутер не открываются.' : warned ? 'Настройки применены, но серверы VPN пока не отвечают.' : 'Настройки применены.'));
-            if (!dry && !warned) setTimeout(() => { if (modal.isConnected) { modal.remove(); toast('✅ Настройки применены'); loadState().then(() => go(S.page)); } }, 1500);
+            if (!dry && !warned) setTimeout(() => { if (modal.isConnected) { modal.remove(); toast('✅ Настройки применены'); statusAt = 0; loadState().then(() => go(S.page)); } }, 1500);
           } else {
             box = h('div', { class: 'alert bad' }, '⛔', h('div', { class: 'grow' },
               h('strong', {}, data.error),
@@ -1239,6 +1272,10 @@ async function runApply(dry) {
               h('div', { style: 'margin-top:8px' }, h('button', { class: 'btn sm', onclick: () => { modal.remove(); go('logs', { tab: 'router' }); } }, '📜 Открыть логи роутера'))));
           }
           status.replaceChildren(box);
+          // the result is known: Close works now, even if the connection is still being closed
+          cancelBtn.hidden = true;
+          close.disabled = false;
+          reader.cancel().catch(() => {});
         }
       }
     }

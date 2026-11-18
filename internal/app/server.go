@@ -42,6 +42,9 @@ type Server struct {
 	mu          sync.Mutex
 	password    string // router password for this session when not remembered
 	lastPing    time.Time
+	secretHost  string // panel password that last worked, so every request does not re-test it
+	secretOK    string
+	secretAt    time.Time
 	applying    sync.Mutex
 	cancelApply context.CancelFunc // set while an apply runs
 	// templateUpdater remembers whether the router's own config-overwriting cron job is active (nil = unknown).
@@ -490,6 +493,9 @@ func lastLine(s string) string {
 func (s *Server) devices(_ http.ResponseWriter, r *http.Request) (any, error) {
 	ctx, cancel := ctxTimeout(r, 40*time.Second)
 	defer cancel()
+	if err := s.reachable(ctx, "22"); err != nil {
+		return nil, err
+	}
 	c, err := s.connect(ctx)
 	if err != nil {
 		return nil, err
@@ -723,6 +729,7 @@ func (s *Server) apply(w http.ResponseWriter, r *http.Request) {
 		DryRun:    dry,
 		Progress:  func(step router.Step) { send("step", step) },
 	})
+	s.forgetSecret() // the panel password may have changed with the new config
 	if err != nil {
 		done := map[string]any{"ok": false, "error": err.Error()}
 		var ce *router.ConfigError
@@ -758,12 +765,46 @@ func (s *Server) apply(w http.ResponseWriter, r *http.Request) {
 // liveSecret returns the panel password the router runs now: the saved one if it works,
 // otherwise none (a router that was never configured by the app).
 func (s *Server) liveSecret(ctx context.Context, st store.State) string {
+	host := s.mihomoHost(st)
+	s.mu.Lock()
+	if s.secretHost == host && time.Since(s.secretAt) < 5*time.Minute && (s.secretOK == st.Settings.Secret || s.secretOK == "") {
+		ok := s.secretOK
+		s.mu.Unlock()
+		return ok
+	}
+	s.mu.Unlock()
 	for _, secret := range []string{st.Settings.Secret, ""} {
-		if _, err := mihomo.New(s.mihomoHost(st), secret).Version(ctx); err == nil {
+		if _, err := mihomo.New(host, secret).Version(ctx); err == nil {
+			s.mu.Lock()
+			s.secretHost, s.secretOK, s.secretAt = host, secret, time.Now()
+			s.mu.Unlock()
 			return secret
 		}
 	}
 	return st.Settings.Secret
+}
+
+// forgetSecret drops the remembered panel password (after an apply may have changed it).
+func (s *Server) forgetSecret() {
+	s.mu.Lock()
+	s.secretHost = ""
+	s.mu.Unlock()
+}
+
+// reachable answers in a couple of seconds whether the router is there at all, so pages do not
+// hang for the full timeout when the computer is away from the home network.
+func (s *Server) reachable(ctx context.Context, port string) error {
+	if s.local {
+		return nil
+	}
+	host := s.st.Get().Router.Host
+	d := net.Dialer{Timeout: 2500 * time.Millisecond}
+	c, err := d.DialContext(ctx, "tcp", net.JoinHostPort(host, port))
+	if err != nil {
+		return fmt.Errorf("роутер %s не отвечает — этот компьютер сейчас не в домашней сети (или роутер выключен). Управлять роутером можно только из его сети", host)
+	}
+	c.Close()
+	return nil
 }
 
 func (s *Server) rollback(_ http.ResponseWriter, r *http.Request) (any, error) {
@@ -967,14 +1008,27 @@ func (s *Server) mihomo(ctx context.Context) *mihomo.Client {
 func (s *Server) status(_ http.ResponseWriter, r *http.Request) (any, error) {
 	ctx, cancel := ctxTimeout(r, 20*time.Second)
 	defer cancel()
+	if err := s.reachable(ctx, "9090"); err != nil {
+		return map[string]any{"online": false, "offline": true, "error": err.Error()}, nil
+	}
 	m := s.mihomo(ctx)
 	version, err := m.Version(ctx)
 	if err != nil {
+		s.forgetSecret()
 		return map[string]any{"online": false, "error": err.Error()}, nil
 	}
-	groups, _ := m.Groups(ctx)
-	providers, _ := m.Providers(ctx)
-	traffic, _ := m.Traffic(ctx)
+	// the three answers do not depend on each other: ask in parallel (each is a round trip to a slow router)
+	var (
+		wg        sync.WaitGroup
+		groups    []mihomo.Group
+		providers []mihomo.Provider
+		traffic   *mihomo.Snapshot
+	)
+	wg.Add(3)
+	go func() { defer wg.Done(); groups, _ = m.Groups(ctx) }()
+	go func() { defer wg.Done(); providers, _ = m.Providers(ctx) }()
+	go func() { defer wg.Done(); traffic, _ = m.Traffic(ctx) }()
+	wg.Wait()
 	out := map[string]any{"online": true, "version": version, "groups": groups, "providers": providers}
 	// Subscriptions that are in the settings but not in the running mihomo: the router
 	// still works with an older config (not applied yet, or mihomo did not reload).
