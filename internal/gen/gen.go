@@ -82,6 +82,18 @@ const (
 	RedirPort  = 1182
 )
 
+// The automatic groups must leave a dead server fast: after autoMaxFailed failed connections through
+// the chosen server mihomo re-tests the whole group at once instead of waiting for the next interval
+// (a Netherlands server that stopped answering kept the VPN down until the 5-minute test).
+// A server that does not answer the test in autoTimeout ms counts as dead; lazy=false keeps testing
+// while nobody uses the internet, so a live server is picked before the phone needs it.
+// The interval is not shorter: testing ~90 servers loads a 256 MB router.
+const (
+	autoInterval  = 180
+	autoTimeout   = 3000
+	autoMaxFailed = 2
+)
+
 // autoTolerance is how much faster (ms) another server must be before url-test switches to it.
 // It only stops flapping between near-equal servers; with 150 a 76 ms server never replaced a 203 ms one.
 const autoTolerance = 30
@@ -361,14 +373,14 @@ func mainGroups(mode, exclude string) ([]M, string) {
 	if mode == "extended" {
 		return []M{
 			{{"name", GroupVPN}, {"type", "select"}, {"icon", iconBase + "Hijacking.png"}, {"proxies", []string{GroupAutoBest, GroupFallback, GroupManual}}},
-			auto(M{{"name", GroupAutoBest}, {"type", "url-test"}, {"hidden", true}, {"icon", iconBase + "Auto.png"}, {"include-all", true}, {"url", testURL}, {"interval", 300}, {"tolerance", autoTolerance}}),
-			auto(M{{"name", GroupFallback}, {"type", "fallback"}, {"hidden", true}, {"icon", iconBase + "Available.png"}, {"include-all", true}, {"url", testURL}, {"interval", 120}}),
+			auto(M{{"name", GroupAutoBest}, {"type", "url-test"}, {"hidden", true}, {"icon", iconBase + "Auto.png"}, {"include-all", true}, {"url", testURL}, {"interval", autoInterval}, {"tolerance", autoTolerance}, {"timeout", autoTimeout}, {"lazy", false}, {"max-failed-times", autoMaxFailed}}),
+			auto(M{{"name", GroupFallback}, {"type", "fallback"}, {"hidden", true}, {"icon", iconBase + "Available.png"}, {"include-all", true}, {"url", testURL}, {"interval", 120}, {"timeout", autoTimeout}, {"lazy", false}, {"max-failed-times", autoMaxFailed}}),
 			{{"name", GroupManual}, {"type", "select"}, {"icon", iconBase + "Static.png"}, {"include-all", true}},
 		}, GroupAutoBest
 	}
 	return []M{
 		{{"name", GroupVPN}, {"type", "select"}, {"icon", iconBase + "Hijacking.png"}, {"include-all", true}, {"proxies", []string{GroupFastest}}},
-		auto(M{{"name", GroupFastest}, {"type", "url-test"}, {"hidden", true}, {"icon", iconBase + "Auto.png"}, {"include-all", true}, {"url", testURL}, {"interval", 300}, {"tolerance", autoTolerance}}),
+		auto(M{{"name", GroupFastest}, {"type", "url-test"}, {"hidden", true}, {"icon", iconBase + "Auto.png"}, {"include-all", true}, {"url", testURL}, {"interval", autoInterval}, {"tolerance", autoTolerance}, {"timeout", autoTimeout}, {"lazy", false}, {"max-failed-times", autoMaxFailed}}),
 	}, GroupFastest
 }
 

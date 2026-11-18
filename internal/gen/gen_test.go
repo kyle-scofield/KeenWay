@@ -62,8 +62,20 @@ func TestMatchesUsersCurrentConfig(t *testing.T) {
 	for i := range want.ProxyGroups {
 		w, g := want.ProxyGroups[i], got.ProxyGroups[i]
 		for _, k := range []string{"name", "type", "icon", "include-all", "hidden", "url", "interval"} {
+			if k == "interval" && w["type"] == "url-test" {
+				continue // checked below: automatic groups re-test more often than the reference
+			}
 			if w[k] != g[k] {
 				t.Errorf("group %v: %s = %v, want %v", w["name"], k, g[k], w[k])
+			}
+		}
+		// automatic groups leave a dead server right away (failed connections trigger a re-test)
+		if w["type"] == "url-test" || w["type"] == "fallback" {
+			if g["max-failed-times"] != autoMaxFailed || g["timeout"] != autoTimeout || g["lazy"] != false {
+				t.Errorf("group %v: max-failed-times=%v timeout=%v lazy=%v", w["name"], g["max-failed-times"], g["timeout"], g["lazy"])
+			}
+			if w["type"] == "url-test" && g["interval"] != autoInterval {
+				t.Errorf("group %v: interval = %v, want %v", w["name"], g["interval"], autoInterval)
 			}
 		}
 		// tolerance is deliberately lower than the reference's 150 so Auto-Best follows the fastest server
