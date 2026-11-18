@@ -667,6 +667,22 @@ pages.servers = async function () {
   const current = chain[chain.length - 1];
 
   const choose = async (group, option) => { await api('POST', '/select', { group, option }); };
+  // switching to an automatic group (Auto-Best, Fallback): test its servers right away, so it stands on
+  // the best live one now — otherwise it keeps the server from its last test (up to a few minutes old)
+  const setMode = async (m) => {
+    try {
+      await choose('VPN', m);
+      const g = byName[m];
+      if (g && (g.type === 'URLTest' || g.type === 'Fallback')) {
+        toast(`VPN → ${m}. Проверяю серверы, выбираю лучший…`, 60000);
+        await api('POST', '/test', { group: m });
+        const now = (await api('GET', '/status')).groups?.find((x) => x.name === m)?.now;
+        toast(now ? `VPN → ${m} → ${now}` : `VPN → ${m}`);
+      } else toast(`VPN → ${m}`);
+    } catch (e) { toast(e.message); }
+    statusAt = 0;
+    go('servers');
+  };
   const pick = async (node) => {
     try {
       if (manual) { await choose(manual.name, node); await choose('VPN', manual.name); } else await choose('VPN', node);
@@ -765,7 +781,7 @@ pages.servers = async function () {
     mount(
       h('div', { class: 'row between' }, h('h1', {}, 'Серверы'), h('div', { class: 'row' }, viewSeg, mapTest)),
       vpn && modes.length > 1 && h('div', { class: 'row' }, h('span', { class: 'small muted' }, 'Режим:'),
-        seg(modes.map((m) => [m, m]), vpn.now, async (m) => { try { await choose('VPN', m); toast(`VPN → ${m}`); go('servers'); } catch (e) { toast(e.message); } })),
+        seg(modes.map((m) => [m, m]), vpn.now, (m) => setMode(m))),
       mapBox,
     );
     await drawMap();
@@ -778,7 +794,7 @@ pages.servers = async function () {
       h('div', { class: 'muted small' }, 'VPN сейчас идёт через'),
       h('div', { style: 'font-weight:700;font-size:1.1rem' }, chain.join(' → ')),
       modes.length > 1 && h('div', { class: 'row' }, h('span', { class: 'small muted' }, 'Режим:'),
-        seg(modes.map((m) => [m, m]), vpn.now, async (m) => { try { await choose('VPN', m); toast(`VPN → ${m}`); go('servers'); } catch (e) { toast(e.message); } }))),
+        seg(modes.map((m) => [m, m]), vpn.now, (m) => setMode(m)))),
     h('div', { class: 'row between', style: 'margin-top:18px' }, h('h2', { style: 'margin:0' }, `Все серверы (${nodes.length})`), search),
     nodes.length ? h('div', { class: 'card stack', style: 'margin-top:10px' },
       h('div', { class: 'row between' }, h('strong', {}, 'Авто-выбор берёт серверы из стран:'), h('span', { class: 'muted small' }, 'нажмите на страну, чтобы исключить; изменения вступят в силу после применения')),

@@ -996,6 +996,19 @@ func (a *App) use(ctx context.Context, args []string) error {
 				return err
 			}
 			a.p("%s VPN → %s", a.green("✔"), o)
+			// an automatic group keeps the server of its last test: test now so it picks the best live one
+			if g := byName[o]; g != nil && (g.Type == "URLTest" || g.Type == "Fallback") {
+				a.p("  проверяю серверы…")
+				if _, err := m.TestGroup(ctx, o); err == nil {
+					if gs, err := m.Groups(ctx); err == nil {
+						for _, x := range gs {
+							if x.Name == o {
+								a.p("%s %s → %s", a.green("✔"), o, x.Now)
+							}
+						}
+					}
+				}
+			}
 			return nil
 		}
 	}
